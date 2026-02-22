@@ -4,6 +4,7 @@ import ProfileHeader from "@/components/ProfileHeader";
 import PrimaryActionButton from "@/components/PrimaryActionButton";
 import MenuLinks from "@/components/MenuLinks";
 import Testimonials from "@/components/Testimonials";
+import LocationMap from "@/components/LocationMap";
 import BookingModal from "@/components/BookingModal";
 import ServicesModal from "@/components/ServicesModal";
 import PricingModal from "@/components/PricingModal";
@@ -29,6 +30,9 @@ export default function Home() {
 
             {/* Testimonials */}
             <Testimonials />
+
+            {/* Location Map */}
+            <LocationMap />
 
             {/* Footer */}
             <footer className="text-center text-text-light text-xs sm:text-sm py-12 mt-12 border-t border-gray-100/50">
