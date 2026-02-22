@@ -17,14 +17,22 @@ export class WhatsAppService {
      * A API da Meta exige números "limpos" e com DDI, sem o '+'
      */
     private static formatPhone(phone: string): string {
+        // Remover tudo que não é número
         let cleaned = phone.replace(/\D/g, '');
 
-        // Se começar com 9 e tiver 9 dígitos, assume Portugal
+        // Remover prefixo 00 (formato internacional alternativo)
+        if (cleaned.startsWith('00')) {
+            cleaned = cleaned.slice(2);
+        }
+
+        // Se tem 9 dígitos e começa com 9 → número PT sem prefixo
         if (cleaned.length === 9 && cleaned.startsWith('9')) {
             cleaned = '351' + cleaned;
         }
 
-        // Se não tiver o prefixo 351 mas tiver 9 dígitos começados por 9
+        // Se tem 12 dígitos e começa com 351 → já está correto
+        // Se tem outro comprimento, enviar como está (pode ser número internacional)
+
         return cleaned;
     }
 
