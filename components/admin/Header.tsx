@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, Plus, Calendar, CalendarDays } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Plus, Calendar, CalendarDays, RefreshCw } from 'lucide-react';
 import { MonthlyScheduleDialog } from './MonthlyScheduleDialog';
 
 interface HeaderProps {
@@ -9,13 +9,14 @@ interface HeaderProps {
   onDateChange: (date: Date) => void;
   onNewAppointment: () => void;
   onSearch: (query: string) => void;
+  onRefresh?: () => void;
 }
 
-export function Header({ currentDate, onDateChange, onNewAppointment, onSearch }: HeaderProps) {
+export function Header({ currentDate, onDateChange, onNewAppointment, onSearch, onRefresh }: HeaderProps) {
   const [isMonthlyDialogOpen, setIsMonthlyDialogOpen] = useState(false);
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-PT', { 
+    return date.toLocaleDateString('pt-PT', {
       weekday: 'long',
       day: '2-digit',
       month: 'long',
@@ -74,6 +75,17 @@ export function Header({ currentDate, onDateChange, onNewAppointment, onSearch }
 
         {/* Right: Search and Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Botão Atualizar */}
+          {onRefresh && (
+            <button
+              onClick={onRefresh}
+              className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-indigo-600"
+              title="Atualizar agendamentos"
+            >
+              <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          )}
+
           {/* Botão Agenda Mensal */}
           <button
             onClick={() => setIsMonthlyDialogOpen(true)}
@@ -105,7 +117,7 @@ export function Header({ currentDate, onDateChange, onNewAppointment, onSearch }
       </div>
 
       {/* Modal de Agenda Mensal */}
-      <MonthlyScheduleDialog 
+      <MonthlyScheduleDialog
         isOpen={isMonthlyDialogOpen}
         onClose={() => setIsMonthlyDialogOpen(false)}
       />

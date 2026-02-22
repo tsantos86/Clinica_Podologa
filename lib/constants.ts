@@ -1,15 +1,16 @@
 /**
  * Constantes centralizadas do projeto
- * Todas as strings mágicas, URLs e configurações devem estar aqui
+ * Apenas dados estáticos. Sem funções ou lógica computada.
  */
 
 // URLs e Endpoints
 export const API = {
-  BASE_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001',
   ENDPOINTS: {
     APPOINTMENTS: '/api/agendamentos',
     SETTINGS: '/api/settings',
     EMAIL: '/api/email',
+    SERVICES: '/api/services',
+    PRODUCTS: '/api/products',
     MBWAY: {
       START: '/api/mbway/iniciar',
       STATUS: '/api/mbway/status',
@@ -18,15 +19,18 @@ export const API = {
   },
 } as const;
 
-// Horários disponíveis para agendamento
-export const AVAILABLE_TIMES = [
-  '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00',
-  '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
-] as const;
-
+// ── Configurações de Agenda ──────────────────────────────
 // Dias da semana não úteis (0 = Domingo, 4 = Quinta)
 export const CLOSED_DAYS = [0, 4] as const;
+
+/** Intervalo entre slots de horário (minutos) */
+export const SCHEDULE = {
+  SLOT_INTERVAL: 30,
+  HYGIENIZATION_TIME: 0,
+  OPENING_TIME: '08:30',
+  CLOSING_TIME: '18:30',
+  LAST_START_TIME: '17:30',
+} as const;
 
 // Mensagens de sucesso
 export const SUCCESS_MESSAGES = {
@@ -55,6 +59,8 @@ export const ERROR_MESSAGES = {
   BOOKINGS_CLOSED: 'Desculpe, não estamos a aceitar agendamentos neste momento.',
   LOGIN_FAILED: 'Email ou senha incorretos. Tente novamente.',
   UNAUTHORIZED: 'Precisa de fazer login para aceder a esta página.',
+  TIME_OVERFLOW: 'Este horário ultrapassa o horário de funcionamento (fecho às 18:30).',
+  OVERLAP: 'Este horário conflita com outro agendamento existente.',
 } as const;
 
 // Mensagens informativas
@@ -71,15 +77,15 @@ export const INFO_MESSAGES = {
   SELECT_DATE: 'Escolha uma data que lhe seja conveniente',
   SELECT_TIME: 'Escolha o horário que prefere',
   FILL_DETAILS: 'Preencha os seus dados de contacto',
-  PAYMENT_INFO: 'Para garantir o seu agendamento, é necessário um sinal de 10%',
+  PAYMENT_INFO: 'Para garantir o seu agendamento, é necessário um sinal de 10€',
 } as const;
 
 // Mensagens de confirmação
 export const CONFIRMATION_MESSAGES = {
   DELETE_APPOINTMENT: 'Tem certeza que deseja cancelar este agendamento?',
-  OPEN_MONTH: (monthName: string) => 
+  OPEN_MONTH: (monthName: string) =>
     `Deseja abrir os agendamentos de ${monthName}?\n\n✅ Clientes poderão agendar para este mês`,
-  CLOSE_MONTH: (monthName: string) => 
+  CLOSE_MONTH: (monthName: string) =>
     `Deseja fechar os agendamentos de ${monthName}?\n\n❌ Clientes não poderão agendar para este mês`,
   LOGOUT: 'Tem certeza que deseja sair?',
 } as const;
@@ -124,11 +130,7 @@ export const STATUS_COLORS = {
   [APPOINTMENT_STATUS.COMPLETED]: 'blue',
 } as const;
 
-// Credenciais de admin (em produção, mover para variáveis de ambiente)
-export const ADMIN_CREDENTIALS = {
-  EMAIL: 'admin@stepodologa.pt',
-  PASSWORD: 'admin123', // TODO: Mover para .env em produção
-} as const;
+// Autenticação via Supabase Auth (sem credenciais hardcoded)
 
 // Configurações de cache
 export const CACHE = {
@@ -157,6 +159,6 @@ export const PAGINATION = {
 // Configurações de upload
 export const UPLOAD = {
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
-  ACCEPTED_FORMATS: ['image/jpeg', 'image/png', 'image/jpg'],
+  ACCEPTED_FORMATS: ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'],
   MAX_FILE_SIZE_LABEL: '5MB',
 } as const;

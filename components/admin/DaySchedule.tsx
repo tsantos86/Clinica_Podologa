@@ -1,10 +1,12 @@
 'use client';
 
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { TimeSlot } from './TimeSlot';
 import { CompactAppointmentCard } from './CompactAppointmentCard';
 import type { Appointment } from '@/types';
+import { SCHEDULE } from '@/lib/constants';
+import { HOURLY_TIMES, getHourlyTimes, timeToMinutes } from '@/lib/utils/schedule';
 
 interface DayScheduleProps {
   date: Date;
@@ -17,37 +19,29 @@ interface DayScheduleProps {
   onNewAppointmentAtTime?: (date: string, time: string) => void;
 }
 
-export function DaySchedule({ 
+export function DaySchedule({
   date,
-  appointments, 
+  appointments,
   onUpdateAppointment,
-  onSwapAppointments, 
-  onEditAppointment, 
+  onSwapAppointments,
+  onEditAppointment,
   onDeleteAppointment,
   onStatusChange,
   onNewAppointmentAtTime
 }: DayScheduleProps) {
   const [activeAppointment, setActiveAppointment] = useState<Appointment | null>(null);
 
-  // Configurar sensores para melhor detecção de drag
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Pequeno movimento antes de ativar drag
+        distance: 8,
       },
     })
   );
 
-  // Horários de trabalho (08:30 às 19:00 - intervalos de 30 min)
-  const workingHours = [
-    '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00',
-    '15:30', '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00'
-  ];
-
   const dateStr = date.toISOString().split('T')[0];
-  
-  // Verificar se é quinta (4) ou domingo (0)
+
+  // Verificar se é dia de folga (Quinta ou Domingo por padrão)
   const dayOfWeek = date.getDay();
   const isClosed = dayOfWeek === 0 || dayOfWeek === 4;
 
@@ -61,7 +55,7 @@ export function DaySchedule({
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over) {
       setActiveAppointment(null);
       return;
@@ -75,7 +69,7 @@ export function DaySchedule({
 
     // Encontrar o agendamento arrastado
     const draggedAppointment = appointments.find((apt: Appointment) => apt.id === draggedAppointmentId);
-    
+
     if (!draggedAppointment || draggedAppointment.hora === newTime) {
       setActiveAppointment(null);
       return;
@@ -83,17 +77,15 @@ export function DaySchedule({
 
     // Verificar se já existe um agendamento no horário de destino
     const targetAppointment = appointments.find(
-      (apt: Appointment) => 
-        apt.data === dateStr && 
-        apt.hora === newTime && 
+      (apt: Appointment) =>
+        apt.data === dateStr &&
+        apt.hora === newTime &&
         apt.id !== draggedAppointmentId
     );
 
     if (targetAppointment && onSwapAppointments) {
-      // TROCAR os dois agendamentos
       onSwapAppointments(draggedAppointmentId, targetAppointment.id);
     } else {
-      // Apenas MOVER para horário vazio
       onUpdateAppointment(draggedAppointmentId, newTime);
     }
 
@@ -103,22 +95,21 @@ export function DaySchedule({
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className={`${
-        isClosed 
-          ? 'bg-gradient-to-r from-gray-500 to-gray-600' 
-          : 'bg-gradient-to-r from-indigo-600 to-purple-600'
-      } text-white px-3 sm:px-6 py-3 sm:py-4`}>
+      <div className={`${isClosed
+        ? 'bg-gradient-to-r from-gray-500 to-gray-600'
+        : 'bg-gradient-to-r from-indigo-600 to-purple-600'
+        } text-white px-3 sm:px-6 py-3 sm:py-4`}>
         <h3 className="text-base sm:text-lg font-semibold">
-          {date.toLocaleDateString('pt-PT', { 
-            weekday: 'long', 
-            day: 'numeric', 
+          {date.toLocaleDateString('pt-PT', {
+            weekday: 'long',
+            day: 'numeric',
             month: 'long',
             year: 'numeric'
           })}
           {isClosed && <span className="ml-2 text-sm">🔒 Fechado</span>}
         </h3>
         <p className="text-xs sm:text-sm text-indigo-100 mt-1">
-          {isClosed 
+          {isClosed
             ? 'Não atendemos às quintas-feiras e domingos'
             : `${appointments.length} agendamento(s)`
           }
@@ -142,11 +133,15 @@ export function DaySchedule({
           onDragEnd={handleDragEnd}
         >
           <div className="divide-y divide-gray-200">
-            {workingHours.map((time) => {
+            {getHourlyTimes(dateStr).map((time) => {
               const slotId = `${dateStr}-${time}`;
-              const slotAppointments = appointments.filter(
-                (apt: Appointment) => apt.data === dateStr && apt.hora === time
-              );
+              const slotStart = timeToMinutes(time);
+              const slotEnd = slotStart + 60;
+
+              const slotAppointments = appointments.filter((apt: Appointment) => {
+                const aptTime = timeToMinutes(apt.hora);
+                return apt.data === dateStr && aptTime >= slotStart && aptTime < slotEnd;
+              });
 
               return (
                 <TimeSlot

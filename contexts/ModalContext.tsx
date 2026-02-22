@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface ModalContextType {
   activeModal: string | null;
@@ -20,6 +20,13 @@ export const useModal = () => {
 
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [activeModal, setActiveModal] = useState<string | null>(null);
+
+  // Cleanup: restaurar overflow ao desmontar o provider
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
 
   const openModal = (modal: string) => {
     setActiveModal(modal);

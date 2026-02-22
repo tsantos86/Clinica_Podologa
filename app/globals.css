@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,8 +9,14 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-text-primary;
+    @apply bg-background text-text-primary font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: #f7f1eb;
+    background-image:
+      radial-gradient(1200px 600px at -10% -10%, rgba(255, 255, 255, 0.75), transparent 60%),
+      radial-gradient(900px 500px at 110% -15%, rgba(255, 255, 255, 0.6), transparent 55%),
+      linear-gradient(180deg, #f7f1eb 0%, #f9f5f1 50%, #fbf8f5 100%);
+    background-attachment: fixed;
   }
 }
 
@@ -18,18 +26,18 @@
   }
   
   .btn-primary {
-    @apply bg-background-light hover:bg-background-dark text-text-primary font-semibold py-3 px-6 rounded-button border border-primary/40 transition-all duration-300 hover:shadow-card-hover active:scale-95 touch-manipulation;
+    @apply bg-white/70 hover:bg-white text-[#b08a2e] font-semibold py-3 px-6 rounded-button border border-primary/35 transition-all duration-300 hover:shadow-card-hover active:scale-95 touch-manipulation backdrop-blur-[2px];
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-background-dark text-text-primary font-semibold py-3 px-6 rounded-button border-2 border-primary/40 transition-all duration-300 active:scale-95 touch-manipulation;
+    @apply bg-white/60 hover:bg-white text-text-primary font-semibold py-3 px-6 rounded-button border border-primary/30 transition-all duration-300 active:scale-95 touch-manipulation backdrop-blur-[2px];
   }
   
   .card {
-    @apply bg-white rounded-card shadow-card p-4 sm:p-6 transition-all duration-300 hover:shadow-card-hover;
+    @apply bg-white/80 rounded-card shadow-card p-4 sm:p-6 transition-all duration-300 hover:shadow-card-hover border border-border/60 backdrop-blur-[2px];
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border-2 border-gray-200 rounded-button focus:border-primary focus:outline-none transition-colors text-base;
+    @apply w-full px-4 py-3 border border-border/70 rounded-button focus:border-primary focus:outline-none transition-colors text-base bg-white/70;
   }
 }

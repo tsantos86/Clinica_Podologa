@@ -5,7 +5,7 @@ import { Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (token?: string, email?: string) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -19,15 +19,24 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setError('');
     setLoading(true);
 
-    // TODO: Implementar autenticação real com backend
-    // Por enquanto, validação simples para demo
-    if (email === 'admin@stepodologa.pt' && password === 'admin123') {
-      localStorage.setItem('admin_authenticated', 'true');
-      onLogin();
-    } else {
-      setError('Email ou senha incorretos');
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        onLogin(data.token, data.user?.email);
+      } else {
+        setError(data.error || 'Email ou senha incorretos');
+      }
+    } catch {
+      setError('Não foi possível conectar ao servidor. Tente novamente.');
     }
-    
+
     setLoading(false);
   };
 
@@ -96,12 +105,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </button>
           </form>
 
-          {/* Demo Info */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-xs text-blue-800 font-medium mb-1">🔐 Demo - Credenciais de Teste:</p>
-            <p className="text-xs text-blue-700">Email: admin@stepodologa.pt</p>
-            <p className="text-xs text-blue-700">Senha: admin123</p>
-          </div>
+
 
           {/* Footer */}
           <div className="mt-6 text-center">

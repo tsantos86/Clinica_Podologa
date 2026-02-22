@@ -81,7 +81,7 @@ const ProfileHeader = () => {
         <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
           Stephanie Oliveira
         </h1>
-        <p className="text-base sm:text-lg text-text-secondary mb-4 sm:mb-6">Podóloga Certificada</p>
+        <p className="text-base sm:text-lg text-text-secondary mb-4 sm:mb-6">Podologia e Esmaltaria</p>
 
         {/* Social Icons */}
         <div className="flex justify-center gap-4">

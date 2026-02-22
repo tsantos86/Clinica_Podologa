@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Modal from './Modal';
 import { useModal } from '@/contexts/ModalContext';
 import { Send } from 'lucide-react';
+import { toast } from 'sonner';
 
 const EmailModal = () => {
   const { activeModal, closeModal } = useModal();
@@ -58,7 +59,7 @@ const EmailModal = () => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('✅ ' + data.message);
+        toast.success(data.message || 'Mensagem enviada com sucesso!');
         setFormData({
           name: '',
           email: '',
@@ -67,11 +68,11 @@ const EmailModal = () => {
         });
         closeModal();
       } else {
-        alert('❌ ' + (data.error || 'Erro ao enviar mensagem'));
+        toast.error(data.error || 'Erro ao enviar mensagem');
       }
     } catch (error) {
       console.error('Erro ao enviar email:', error);
-      alert('❌ Não foi possível enviar a mensagem. Verifique sua conexão e tente novamente.');
+      toast.error('Não foi possível enviar a mensagem. Verifique sua conexão e tente novamente.');
     }
   };
 

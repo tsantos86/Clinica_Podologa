@@ -1,21 +1,29 @@
 'use client';
 
-import { Menu, X, Calendar, BarChart3, Settings, LogOut } from 'lucide-react';
+import { Menu, X, Calendar, LayoutDashboard, Users, Settings, LogOut, Image, MessageSquare, FileText } from 'lucide-react';
 import { useState } from 'react';
-import Link from 'next/link';
 
 interface MobileSidebarProps {
   onLogout: () => void;
+  onMenuChange?: (menuId: string) => void;
+  activeItem?: string;
+  userEmail?: string;
 }
 
-export function MobileSidebar({ onLogout }: MobileSidebarProps) {
-  const [isOpen, setIsOpen] = useState(false);
+const menuItems = [
+  { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { id: 'agendamentos', icon: Calendar, label: 'Agendamentos' },
+  { id: 'clientes', icon: Users, label: 'Clientes' },
+  { id: 'servicos-fotos', icon: Image, label: 'Serviços & Fotos' },
+  { id: 'testemunhos', icon: MessageSquare, label: 'Testemunhos' },
+  { id: 'registos', icon: FileText, label: 'Registos' },
+  { id: 'configuracoes', icon: Settings, label: 'Configurações' },
+];
 
-  const menuItems = [
-    { icon: Calendar, label: 'Agendamentos', href: '/admin', active: true },
-    { icon: BarChart3, label: 'Dashboard', href: '/admin/dashboard', active: false },
-    { icon: Settings, label: 'Configurações', href: '/admin/settings', active: false },
-  ];
+export function MobileSidebar({ onLogout, onMenuChange, activeItem = 'agendamentos', userEmail }: MobileSidebarProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const displayEmail = userEmail || 'admin';
+  const initials = displayEmail.substring(0, 1).toUpperCase();
 
   return (
     <>
@@ -38,13 +46,17 @@ export function MobileSidebar({ onLogout }: MobileSidebarProps) {
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 lg:hidden ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 lg:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Menu</h2>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">SP</span>
+            </div>
+            <h2 className="text-lg font-bold text-gray-900">Menu</h2>
+          </div>
           <button
             onClick={() => setIsOpen(false)}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -57,20 +69,22 @@ export function MobileSidebar({ onLogout }: MobileSidebarProps) {
         <nav className="flex-1 p-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isActive = activeItem === item.id;
             return (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
-                  item.active
-                    ? 'bg-indigo-50 text-indigo-600'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+              <button
+                key={item.id}
+                onClick={() => {
+                  onMenuChange?.(item.id);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all ${isActive
+                  ? 'bg-indigo-50 text-indigo-600 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
               >
                 <Icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-              </Link>
+                <span className="text-sm">{item.label}</span>
+              </button>
             );
           })}
         </nav>
@@ -79,12 +93,12 @@ export function MobileSidebar({ onLogout }: MobileSidebarProps) {
         <div className="border-t border-gray-200 p-4">
           <div className="mb-4 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
-                A
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-semibold">
+                {initials}
               </div>
               <div>
-                <p className="font-semibold text-gray-900 text-sm">Admin</p>
-                <p className="text-xs text-gray-500">admin@stepodologa.pt</p>
+                <p className="font-semibold text-gray-900 text-sm">{displayEmail.split('@')[0]}</p>
+                <p className="text-xs text-gray-500">{displayEmail}</p>
               </div>
             </div>
           </div>

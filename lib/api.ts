@@ -21,18 +21,38 @@ export class ApiError extends Error {
 }
 
 /**
+ * Obtém o token de autenticação admin do localStorage (client-side)
+ */
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('admin_token');
+}
+
+/**
  * Função auxiliar para fazer requisições HTTP
+ * Injeta automaticamente o Authorization header para rotas admin quando disponível
  */
 async function fetchApi<T>(
   endpoint: string,
-  options?: RequestInit
+  options?: RequestInit & { token?: string }
 ): Promise<T> {
   try {
+    const authHeaders: Record<string, string> = {};
+
+    // Usar token explícito ou auto-detectar para rotas admin
+    const token = options?.token || getAuthToken();
+    if (token && (endpoint.includes('/admin') || endpoint.includes('/agendamentos'))) {
+      authHeaders['Authorization'] = `Bearer ${token}`;
+    }
+
+    const { token: _token, ...restOptions } = options || {};
+
     const response = await fetch(endpoint, {
-      ...options,
+      ...restOptions,
       headers: {
         'Content-Type': 'application/json',
-        ...options?.headers,
+        ...authHeaders,
+        ...restOptions?.headers,
       },
     });
 
@@ -51,7 +71,7 @@ async function fetchApi<T>(
     if (error instanceof ApiError) {
       throw error;
     }
-    
+
     // Erro de rede ou parse
     throw new ApiError(
       'Não foi possível conectar ao servidor. Verifique sua internet.',
@@ -69,10 +89,10 @@ export const AppointmentService = {
    * Busca todos os agendamentos ou de uma data específica
    */
   async getAll(date?: string): Promise<{ agendamentos: Appointment[] }> {
-    const url = date 
+    const url = date
       ? `${API.ENDPOINTS.APPOINTMENTS}?data=${date}`
       : API.ENDPOINTS.APPOINTMENTS;
-    
+
     return fetchApi<{ agendamentos: Appointment[] }>(url);
   },
 
@@ -80,10 +100,11 @@ export const AppointmentService = {
    * Cria um novo agendamento
    */
   async create(data: Partial<Appointment>): Promise<Appointment> {
-    return fetchApi<Appointment>(API.ENDPOINTS.APPOINTMENTS, {
+    const response = await fetchApi<any>(API.ENDPOINTS.APPOINTMENTS, {
       method: 'POST',
       body: JSON.stringify(data),
     });
+    return response?.agendamento || response;
   },
 
   /**
@@ -115,40 +136,7 @@ export const AppointmentService = {
     });
   },
 
-  /**
-   * Cria agendamento com upload de foto (multipart/form-data)
-   */
-  async createWithPhoto(formData: FormData): Promise<Appointment> {
-    try {
-      const response = await fetch(API.ENDPOINTS.APPOINTMENTS, {
-        method: 'POST',
-        body: formData,
-        // Não definir Content-Type - deixar o browser definir com boundary
-      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new ApiError(
-          data.error || 'Erro ao criar agendamento',
-          response.status,
-          data
-        );
-      }
-
-      return data;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-      
-      throw new ApiError(
-        'Não foi possível processar o agendamento.',
-        undefined,
-        error
-      );
-    }
-  },
 };
 
 /**
@@ -159,10 +147,10 @@ export const SettingsService = {
    * Busca configurações de um mês específico ou de todos os meses
    */
   async get(month?: string): Promise<{ bookingsEnabled: boolean }> {
-    const url = month 
+    const url = month
       ? `${API.ENDPOINTS.SETTINGS}?month=${month}`
       : API.ENDPOINTS.SETTINGS;
-    
+
     return fetchApi<{ bookingsEnabled: boolean }>(url);
   },
 
@@ -187,7 +175,7 @@ export const EmailService = {
   async send(data: {
     name: string;
     email: string;
-    phone: string;
+    subject: string;
     message: string;
   }): Promise<{ message: string }> {
     return fetchApi<{ message: string }>(API.ENDPOINTS.EMAIL, {
@@ -213,20 +201,33 @@ export const PaymentService = {
     status: string;
     message: string;
   }> {
-    return fetchApi(API.ENDPOINTS.MBWAY.START, {
+    return fetchApi<{
+      transactionId: string;
+      status: string;
+      message: string;
+    }>(API.ENDPOINTS.MBWAY.START, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        telefone: data.phone,
+        valor: data.amount,
+        referencia: data.appointmentId
+      }),
     });
   },
 
   /**
-   * Verifica status de um pagamento MB WAY
+   * Consulta o status de um pagamento MB WAY
    */
-  async checkStatus(transactionId: string): Promise<{
+  async status(transactionId: string): Promise<{
+    transactionId: string;
     status: string;
     message: string;
   }> {
-    return fetchApi(`${API.ENDPOINTS.MBWAY.STATUS}?transactionId=${transactionId}`);
+    return fetchApi<{
+      transactionId: string;
+      status: string;
+      message: string;
+    }>(`${API.ENDPOINTS.MBWAY.STATUS}?referencia=${transactionId}`);
   },
 };
 
@@ -235,7 +236,7 @@ export const PaymentService = {
  */
 export function createFormData(data: Record<string, any>): FormData {
   const formData = new FormData();
-  
+
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
       if (value instanceof File) {
@@ -245,7 +246,7 @@ export function createFormData(data: Record<string, any>): FormData {
       }
     }
   });
-  
+
   return formData;
 }
 
@@ -261,7 +262,7 @@ export async function retryFetch<T>(
     return await fn();
   } catch (error) {
     if (retries === 0) throw error;
-    
+
     await new Promise(resolve => setTimeout(resolve, delay));
     return retryFetch(fn, retries - 1, delay * 2);
   }

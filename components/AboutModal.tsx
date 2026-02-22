@@ -22,14 +22,14 @@ const AboutModal = () => {
             />
           </div>
           <h3 className="text-2xl font-bold text-text-primary">Stephanie Oliveira</h3>
-          <p className="text-primary font-semibold">Podóloga Certificada</p>
+          <p className="text-primary font-semibold">Podologia e Esmaltaria</p>
         </div>
 
         <div className="space-y-6">
           <p className="text-text-secondary leading-relaxed">
-            Olá! Sou Stephanie Oliveira, podóloga certificada, com mais de 5 anos de experiência em cuidados especializados dos pés.
+            Olá! Sou Stephanie Oliveira, especialista em podologia e esmaltaria, com mais de 5 anos de experiência em cuidados especializados dos pés.
             Sou apaixonada pela minha profissão e acredito que a saúde dos pés é fundamental para o bem-estar, mobilidade e qualidade de vida. Ao longo da minha trajetória, venho me dedicando constantemente ao aperfeiçoamento técnico e humano, para oferecer sempre o melhor atendimento aos meus pacientes.
-            Meu compromisso é proporcionar um serviço seguro, eficaz, confortável e personalizado, respeitando as necessidades individuais de cada pacinte.
+            Meu compromisso é proporcionar um serviço seguro, eficaz, confortável e personalizado, respeitando as necessidades individuais de cada paciente.
           </p>
 
           <div className="card bg-gradient-to-br from-primary-light to-white">
@@ -87,7 +87,7 @@ const AboutModal = () => {
                 </a>
               </div>
               <p>
-                Agende o seu atendimento e cuide dos seus pes com quem entende e se importa
+                Agende o seu atendimento e cuide dos seus pés com quem entende e se importa
               </p>
             </div>
           </div>

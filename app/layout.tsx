@@ -1,14 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Toaster } from "sonner";
+import CookieBanner from "@/components/CookieBanner";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import "./globals.css";
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   variable: '--font-inter',
 });
 
-const playfair = Playfair_Display({ 
+const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: '--font-playfair',
 });
@@ -21,33 +24,36 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: "Stephanie Oliveira | Podologia Profissional",
-  description: "Serviços profissionais de podologia com mais de 10 anos de experiência. Agende sua consulta online! Tratamentos especializados para a saúde dos seus pés.",
-  keywords: ["podologia", "podóloga", "cuidados com os pés", "tratamento de unhas", "pedicure medical", "stephanie oliveira", "podologia portugal"],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://stepodologia.com'),
+  title: {
+    default: "Stephanie Oliveira | Podologia Profissional",
+    template: "%s | Stephanie Oliveira Podologia"
+  },
+  description: "Serviços profissionais de podologia em Portugal. Especialista em saúde dos pés e pedicure medical. Agende já o seu horário online!",
+  keywords: ["podologia", "podóloga em portugal", "saúde dos pés", "tratamento de fungos", "unhas encravadas", "pedicure medical", "stephanie oliveira"],
   authors: [{ name: "Stephanie Oliveira" }],
   creator: "Stephanie Oliveira",
   openGraph: {
     type: "website",
     locale: "pt_PT",
-    url: process.env.NEXT_PUBLIC_SITE_URL || "https://stepodologia.com",
+    url: "https://stepodologia.com",
     title: "Stephanie Oliveira | Podologia Profissional",
-    description: "Serviços profissionais de podologia com mais de 10 anos de experiência.",
+    description: "Cuide da saúde dos seus pés com quem entende. Agendamento online simples e rápido.",
     siteName: "Stephanie Oliveira Podologia",
     images: [
       {
-        url: "/perfil.jpg",
-        width: 800,
-        height: 800,
-        alt: "Stephanie Oliveira - Podóloga",
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Stephanie Oliveira Podologia",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Stephanie Oliveira | Podologia Profissional",
-    description: "Serviços profissionais de podologia. Agende sua consulta online!",
-    images: ["/perfil.jpg"],
+    description: "Saúde dos pés com excelência. Agende online!",
+    images: ["/og-image.jpg"],
   },
   icons: {
     icon: "/favicon.svg",
@@ -67,6 +73,9 @@ export default function RootLayout({
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
+        <WhatsAppButton />
+        <Toaster position="top-right" richColors />
+        <CookieBanner />
       </body>
     </html>
   );

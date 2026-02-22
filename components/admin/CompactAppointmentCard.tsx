@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { User, Phone, GripVertical, Check, X, Clock } from 'lucide-react';
+import { User, Phone, GripVertical, Check, X, Clock, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 import type { Appointment } from '@/types';
@@ -14,15 +14,15 @@ interface CompactAppointmentCardProps {
   onStatusChange?: (id: string, status: string) => void;
 }
 
-export function CompactAppointmentCard({ 
-  appointment, 
-  onEdit, 
-  onDelete, 
-  onStatusChange 
+export function CompactAppointmentCard({
+  appointment,
+  onEdit,
+  onDelete,
+  onStatusChange
 }: CompactAppointmentCardProps) {
   const [showActions, setShowActions] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     attributes,
     listeners,
@@ -84,13 +84,13 @@ export function CompactAppointmentCard({
         )}
       >
         <div className="flex items-start gap-1.5 sm:gap-3">
-          {/* Drag Handle - Visual apenas */}
+          {/* Drag Handle */}
           <div className="text-gray-400 mt-1 hidden sm:block pointer-events-none">
             <GripVertical className="w-4 h-4" />
           </div>
 
           {/* Content */}
-          <div 
+          <div
             className="flex-1 min-w-0"
             onClick={(e) => {
               e.stopPropagation();
@@ -108,6 +108,26 @@ export function CompactAppointmentCard({
                 <div className="text-xs text-gray-600 mb-1 truncate">
                   {appointment.servico}
                 </div>
+
+                {/* Duration and Products Info */}
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-100 text-[10px] text-gray-600 rounded">
+                    <Clock className="w-2.5 h-2.5" />
+                    {appointment.duracaoMinutos || 60} min
+                  </span>
+
+                  {appointment.produtos && appointment.produtos.length > 0 && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 text-[10px] text-indigo-600 rounded border border-indigo-100">
+                      <ShoppingBag className="w-2.5 h-2.5" />
+                      {appointment.produtos.length} prod.
+                    </span>
+                  )}
+
+                  <span className="text-[10px] font-bold text-gray-700">
+                    {appointment.preco}€
+                  </span>
+                </div>
+
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <Phone className="w-3 h-3" />
@@ -132,8 +152,8 @@ export function CompactAppointmentCard({
 
         {/* Quick Actions */}
         {showActions && (
-          <div 
-            className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 overflow-hidden"
+          <div
+            className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -145,8 +165,8 @@ export function CompactAppointmentCard({
             >
               📝 Editar detalhes
             </button>
-            
-            {appointment.status === 'pending' && (
+
+            {(appointment.status === 'pending' || appointment.status === 'cancelled') && (
               <button
                 onClick={() => {
                   if (onStatusChange) onStatusChange(appointment.id, 'confirmed');
@@ -158,7 +178,7 @@ export function CompactAppointmentCard({
                 Confirmar agendamento
               </button>
             )}
-            
+
             {appointment.status === 'confirmed' && (
               <button
                 onClick={() => {
@@ -170,17 +190,19 @@ export function CompactAppointmentCard({
                 ✓✓ Marcar como concluído
               </button>
             )}
-            
-            <button
-              onClick={() => {
-                if (onDelete) onDelete(appointment.id);
-                setShowActions(false);
-              }}
-              className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 text-red-700 transition-colors"
-            >
-              <X className="w-4 h-4 inline mr-2" />
-              Cancelar agendamento
-            </button>
+
+            {appointment.status !== 'cancelled' && (
+              <button
+                onClick={() => {
+                  if (onDelete) onDelete(appointment.id);
+                  setShowActions(false);
+                }}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 text-red-700 transition-colors"
+              >
+                <X className="w-4 h-4 inline mr-2" />
+                Cancelar agendamento
+              </button>
+            )}
           </div>
         )}
       </div>

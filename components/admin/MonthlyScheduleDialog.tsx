@@ -5,7 +5,6 @@ import { X, Calendar, Lock, Unlock } from 'lucide-react';
 import { toast } from 'sonner';
 import { MONTH_NAMES, SUCCESS_MESSAGES, ERROR_MESSAGES, CONFIRMATION_MESSAGES } from '@/lib/constants';
 import { SettingsService } from '@/lib/api';
-import { formatMonthYear } from '@/lib/formatters';
 
 interface MonthlyScheduleDialogProps {
   isOpen: boolean;

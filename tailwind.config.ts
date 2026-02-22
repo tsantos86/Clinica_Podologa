@@ -10,28 +10,28 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#d8d0d2',
-          dark: '#c6bcc0',
-          light: '#f0eaec',
+          DEFAULT: '#d7c8bf',
+          dark: '#c9b8ae',
+          light: '#f2e8e2',
         },
         background: {
-          DEFAULT: '#f7f7f4',
-          light: '#fcfcfa',
-          dark: '#ededed',
+          DEFAULT: '#f7f1eb',
+          light: '#fbf7f3',
+          dark: '#efe7df',
         },
         text: {
-          primary: '#1a1a1a',
-          secondary: '#666666',
-          light: '#999999',
+          primary: '#1f1b17',
+          secondary: '#6b5f57',
+          light: '#9a8f86',
         },
-        border: '#e0e0e0',
+        border: '#e6ddd5',
         success: '#4caf50',
         error: '#f44336',
         warning: '#ff9800',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        serif: ['Playfair Display', 'serif'],
+        sans: ['Manrope', 'sans-serif'],
+        serif: ['Cormorant Garamond', 'serif'],
       },
       borderRadius: {
         'card': '16px',

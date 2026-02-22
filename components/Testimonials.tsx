@@ -1,28 +1,64 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, MessageSquare } from 'lucide-react';
 import type { Testimonial } from '@/types';
+import TestimonialForm from './TestimonialForm';
 
-const STAR_VALUES = [1, 2, 3, 4, 5] as const;
 const INITIAL_TESTIMONIALS: Testimonial[] = [
   {
     id: 1,
-    name: 'Maria Silva',
-    text: 'Excelente profissional! Muito atenciosa e cuidadosa. Recomendo!',
+    name: 'Joana Martins',
+    text: 'Bom dia alegria! Não senti nada nos pés, nada de nada. Obrigada, Stef, mãos maravilhosas!',
     rating: 5,
   },
   {
     id: 2,
-    name: 'João Santos',
-    text: 'Serviço de qualidade, ambiente limpo e confortável.',
+    name: 'Bianca Calheiros',
+    text: 'Gosto muito do seu trabalho e pretendo voltar mais vezes.',
     rating: 5,
   },
   {
     id: 3,
-    name: 'Ana Costa',
-    text: 'A Stephanie é muito profissional e dedicada. Adorei o resultado!',
+    name: 'Eliana Santos',
+    text: 'Não tenho razão nenhuma de queixa do teu trabalho, amo e recomendo os teus serviços!',
+    rating: 5,
+  },
+  {
+    id: 4,
+    name: 'Carla Mendonça',
+    text: 'Gosto muito do teu trabalho, és 5 estrelas. Fazes tudo com perfeição. Ainda bem que apareceste na minha vida. És batalhadora e trabalhas super bem.',
+    rating: 5,
+  },
+  {
+    id: 5,
+    name: 'João Costa',
+    text: 'Desde que comecei a fazer os tratamentos consegui ver melhoria na saúde dos meus pés. Antes tinha desconforto fúngico e muita pele, mas seguindo os seus tratamentos os meus pés estão muito melhores. Muito obrigado.',
+    rating: 5,
+  },
+  {
+    id: 6,
+    name: 'Izabel Cristina',
+    text: 'Adoro o seu trabalho. Sinceramente, pra mim foi a podóloga melhor que encontrei até hoje. Além de ser a profissional que és, é simpática, comunicativa e muito prestativa. Adoro o seu trabalho!',
+    rating: 5,
+  },
+  {
+    id: 7,
+    name: 'Marieta Venâncio',
+    text: 'Da minha parte, nada a acrescentar. Todas as vezes que fui sempre foi muito bom. Espero ter ajudado. Bjsss',
+    rating: 5,
+  },
+  {
+    id: 8,
+    name: 'Susana Prazeres',
+    text: 'Sim, bastante! Porque não te conheci antes? Sinto que tenho outros pés! Ainda vou no primeiro tratamento e já estou maravilhada. Obrigada 🥰 Está a correr muito bem 😍 Estou ansiosa para voltar ❤️ E muito obrigada por perguntares, és uma pessoa muito querida.',
+    rating: 5,
+  },
+  {
+    id: 9,
+    name: 'Clau Cliente',
+    text: 'Oi Sté, tudo bem? Quero agradecer-te por cuidares dos meus pés com tanto cuidado e carinho. Em três meses as minhas unhas melhoraram muito com os teus cuidados e as tuas dicas ❤️ A cada mês que passa sinto-me mais confortável com os meus pés. Agradeço-te de coração por aumentares a minha auto-estima e tratares uma das minhas maiores inseguranças. Amei mais ainda agora que já podemos pintá-las ❤️',
     rating: 5,
   },
 ];
@@ -30,26 +66,34 @@ const INITIAL_TESTIMONIALS: Testimonial[] = [
 const Testimonials = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([...INITIAL_TESTIMONIALS]);
   const [showForm, setShowForm] = useState(false);
-  const [newTestimonial, setNewTestimonial] = useState({
-    name: '',
-    text: '',
-    rating: 5,
-  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newTestimonial.name && newTestimonial.text) {
-      setTestimonials([
-        ...testimonials,
-        {
-          id: testimonials.length + 1,
-          ...newTestimonial,
-        },
-      ]);
-      setNewTestimonial({ name: '', text: '', rating: 5 });
-      setShowForm(false);
-    }
-  };
+  // Fetch approved testimonials from API
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const res = await fetch('/api/testimonials');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.testimonials && data.testimonials.length > 0) {
+            // Use API testimonials, map to expected shape
+            const apiTestimonials: Testimonial[] = data.testimonials.map((t: { id: string; name: string; text: string; rating: number }, i: number) => ({
+              id: i + 100, // offset to avoid collisions with initial
+              name: t.name,
+              text: t.text,
+              rating: t.rating,
+            }));
+            // Merge: initial + API (deduplicate by name+text)
+            const existing = new Set(INITIAL_TESTIMONIALS.map(t => `${t.name}:${t.text}`));
+            const newOnes = apiTestimonials.filter(t => !existing.has(`${t.name}:${t.text}`));
+            setTestimonials([...INITIAL_TESTIMONIALS, ...newOnes]);
+          }
+        }
+      } catch {
+        // Silently use initial testimonials if API unavailable
+      }
+    };
+    fetchTestimonials();
+  }, []);
 
   return (
     <motion.div
@@ -93,63 +137,7 @@ const Testimonials = () => {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden"
           >
-            <form onSubmit={handleSubmit} className="card space-y-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Seu Nome
-                </label>
-                <input
-                  type="text"
-                  value={newTestimonial.name}
-                  onChange={(e) =>
-                    setNewTestimonial({ ...newTestimonial, name: e.target.value })
-                  }
-                  className="input-field"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Seu Depoimento
-                </label>
-                <textarea
-                  value={newTestimonial.text}
-                  onChange={(e) =>
-                    setNewTestimonial({ ...newTestimonial, text: e.target.value })
-                  }
-                  className="input-field min-h-[100px]"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  Avaliação
-                </label>
-                <div className="flex gap-2">
-                  {STAR_VALUES.map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() =>
-                        setNewTestimonial({ ...newTestimonial, rating: star })
-                      }
-                      className="transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`w-8 h-8 ${
-                          star <= newTestimonial.rating
-                            ? 'text-yellow-400 fill-yellow-400'
-                            : 'text-gray-300'
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <button type="submit" className="btn-primary w-full">
-                Enviar Depoimento
-              </button>
-            </form>
+            <TestimonialForm onClose={() => setShowForm(false)} />
           </motion.div>
         )}
       </AnimatePresence>

@@ -216,7 +216,7 @@ Este projeto é privado e pertence a Stephanie Oliveira Podologia.
 
 - **Tel:** +351 934 504 542
 - **Instagram:** @stepodologia
-- **Email:** stephanie@example.com
+- **Email:** steoliveira@gmail.com
 
 ---
 

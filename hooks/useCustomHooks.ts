@@ -2,7 +2,7 @@
  * Hooks customizados para gerenciar estado e lógica reutilizável
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppointmentService, SettingsService, ApiError } from '@/lib/api';
 import { CACHE, CLOSED_DAYS, ERROR_MESSAGES } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -55,10 +55,10 @@ export function useAppointments(autoLoad = false) {
       const data = await AppointmentService.getAll(date);
       setAppointments(data.agendamentos || []);
     } catch (err) {
-      const errorMessage = err instanceof ApiError 
-        ? err.message 
+      const errorMessage = err instanceof ApiError
+        ? err.message
         : ERROR_MESSAGES.NETWORK;
-      
+
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -72,22 +72,22 @@ export function useAppointments(autoLoad = false) {
       setAppointments(prev => [...prev, newAppointment]);
       return newAppointment;
     } catch (err) {
-      const errorMessage = err instanceof ApiError 
-        ? err.message 
+      const errorMessage = err instanceof ApiError
+        ? err.message
         : ERROR_MESSAGES.GENERIC;
-      
+
       toast.error(errorMessage);
       throw err;
     }
   }, []);
 
   const updateAppointment = useCallback(async (
-    id: string, 
+    id: string,
     updates: Partial<Appointment>
   ) => {
     // Optimistic update
     const previousAppointments = [...appointments];
-    setAppointments(prev => 
+    setAppointments(prev =>
       prev.map(apt => apt.id === id ? { ...apt, ...updates } : apt)
     );
 
@@ -96,11 +96,11 @@ export function useAppointments(autoLoad = false) {
     } catch (err) {
       // Rollback em caso de erro
       setAppointments(previousAppointments);
-      
-      const errorMessage = err instanceof ApiError 
-        ? err.message 
+
+      const errorMessage = err instanceof ApiError
+        ? err.message
         : ERROR_MESSAGES.GENERIC;
-      
+
       toast.error(errorMessage);
       throw err;
     }
@@ -116,11 +116,11 @@ export function useAppointments(autoLoad = false) {
     } catch (err) {
       // Rollback em caso de erro
       setAppointments(previousAppointments);
-      
-      const errorMessage = err instanceof ApiError 
-        ? err.message 
+
+      const errorMessage = err instanceof ApiError
+        ? err.message
         : ERROR_MESSAGES.GENERIC;
-      
+
       toast.error(errorMessage);
       throw err;
     }
@@ -176,7 +176,7 @@ export function useBookingSettings(month?: string) {
 
   const toggleBookings = useCallback(async (newMonth: string) => {
     const newStatus = !bookingsEnabled;
-    
+
     // Optimistic update
     setBookingsEnabled(newStatus);
 
@@ -185,11 +185,11 @@ export function useBookingSettings(month?: string) {
     } catch (err) {
       // Rollback em caso de erro
       setBookingsEnabled(!newStatus);
-      
-      const errorMessage = err instanceof ApiError 
-        ? err.message 
+
+      const errorMessage = err instanceof ApiError
+        ? err.message
         : ERROR_MESSAGES.GENERIC;
-      
+
       toast.error(errorMessage);
       throw err;
     }
@@ -210,17 +210,17 @@ export function useWorkingDays() {
   const isWorkingDay = useCallback((date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
     const dayOfWeek = d.getDay();
-    
+
     return !CLOSED_DAYS.includes(dayOfWeek as any);
   }, []);
 
   const getClosedDayMessage = useCallback((date: Date | string) => {
     const d = typeof date === 'string' ? new Date(date + 'T00:00:00') : date;
     const dayOfWeek = d.getDay();
-    
+
     if (dayOfWeek === 0) return 'Domingo é dia de descanso';
     if (dayOfWeek === 4) return 'Quinta-feira é dia de descanso';
-    
+
     return null;
   }, []);
 
@@ -254,20 +254,36 @@ export function useDebounce<T>(value: T, delay: number = 500): T {
  */
 export function useLoadingWithTimeout(timeout: number = 10000) {
   const [loading, setLoading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const startLoading = useCallback(() => {
     setLoading(true);
-    
-    const timer = setTimeout(() => {
+
+    // Limpar timer anterior se existir
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
+    timerRef.current = setTimeout(() => {
       setLoading(false);
+      timerRef.current = null;
       toast.error('A operação demorou muito tempo. Por favor, tente novamente.');
     }, timeout);
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [timeout]);
 
   const stopLoading = useCallback(() => {
     setLoading(false);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
   }, []);
 
   return {
@@ -308,14 +324,14 @@ export function useMediaQuery(query: string): boolean {
 
   useEffect(() => {
     const media = window.matchMedia(query);
-    
+
     if (media.matches !== matches) {
       setMatches(media.matches);
     }
 
     const listener = () => setMatches(media.matches);
     media.addEventListener('change', listener);
-    
+
     return () => media.removeEventListener('change', listener);
   }, [matches, query]);
 
@@ -328,5 +344,3 @@ export function useMediaQuery(query: string): boolean {
 export function useIsMobile(): boolean {
   return useMediaQuery('(max-width: 768px)');
 }
-
-import { useRef } from 'react';
