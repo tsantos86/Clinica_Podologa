@@ -799,11 +799,36 @@ const BookingModal = () => {
                     <h4 className="font-semibold mb-3 text-primary">💳 Forma de pagamento</h4>
 
                     {!paymentSettings.mbwayEnabled ? (
-                      <div className="p-4 bg-gray-50 rounded-button border border-gray-200">
-                        <p className="text-sm text-gray-600">
-                          💵 O pagamento será feito presencialmente no dia da consulta.
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
+                      <div className="p-5 bg-gradient-to-br from-gray-50 to-white rounded-button border border-gray-200 space-y-4">
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl">💳</span>
+                          <div>
+                            <p className="font-semibold text-text-primary text-sm">Formas de pagamento:</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100">
+                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
+                                Revolut
+                              </span>
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-medium border border-green-100">
+                                📱 MB Way
+                              </span>
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs font-medium border border-amber-100">
+                                💵 Dinheiro
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-gray-100" />
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl">💵</span>
+                          <p className="text-sm text-gray-600">
+                            O pagamento será feito <strong className="text-text-primary">presencialmente</strong> no dia da consulta.
+                          </p>
+                        </div>
+
+                        <p className="text-xs text-gray-400 italic text-center">
                           Pagamento online não está disponível no momento.
                         </p>
                       </div>
