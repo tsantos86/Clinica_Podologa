@@ -143,7 +143,7 @@ const BookingModal = () => {
           duracaoMinutos: a.duracaoMinutos || 60,
         }));
 
-      const slotsForDay = generateTimeSlots(date, false);
+      const slotsForDay = generateTimeSlots(date, true);
       // Filter available slots based on service duration + hygienization + overlaps
       const available = slotsForDay.filter(time =>
         isSlotAvailable(time, selectedServiceDuration, bookedAppointments, date)
@@ -155,7 +155,7 @@ const BookingModal = () => {
       }
     } catch (error) {
       toast.error(ERROR_MESSAGES.NETWORK);
-      setAvailableSlots(generateTimeSlots(date));
+      setAvailableSlots(generateTimeSlots(date, true));
     } finally {
       setLoadingSlots(false);
     }
