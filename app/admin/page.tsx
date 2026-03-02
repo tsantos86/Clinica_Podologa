@@ -21,7 +21,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authToken, setAuthToken] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [activeMenu, setActiveMenu] = useState('agendamentos');
+  const [activeMenu, setActiveMenu] = useState('dashboard');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -73,7 +73,7 @@ export default function AdminPage() {
     setIsAuthenticated(false);
     setAuthToken('');
     setUserEmail('');
-    setActiveMenu('agendamentos');
+    setActiveMenu('dashboard');
   };
 
   // Carregar agendamentos quando autenticar
@@ -201,7 +201,7 @@ export default function AdminPage() {
         );
 
         const response = await fetch(`/api/agendamentos/${appointment.id}`, {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${authToken}`,
@@ -235,9 +235,14 @@ export default function AdminPage() {
 
           if (response.ok) {
             const data = await response.json();
-            setAppointments(prev =>
-              prev.map(apt => apt.id === newAppointment.id ? { ...appointment, id: data.id } : apt)
-            );
+            const realId = data.agendamento?.id || data.id;
+            if (realId) {
+              setAppointments(prev =>
+                prev.map(apt => apt.id === newAppointment.id ? { ...appointment, id: realId } : apt)
+              );
+              // Forçar atualização local dos agendamentos
+              fetchAppointments();
+            }
           }
         } catch (err) {
           console.log('Backend indisponível, mantendo ID temporário');

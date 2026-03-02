@@ -3,7 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster } from "sonner";
 import CookieBanner from "@/components/CookieBanner";
-import WhatsAppButton from "@/components/WhatsAppButton";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -24,35 +24,49 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://stepodologia.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.steoliveirapodologa.pt'),
   title: {
-    default: "Stephanie Oliveira | Podologia Profissional",
+    default: "Stephanie Oliveira | Podóloga na Amora, Seixal - Saúde dos Pés",
     template: "%s | Stephanie Oliveira Podologia"
   },
-  description: "Serviços profissionais de podologia em Portugal. Especialista em saúde dos pés e pedicure medical. Agende já o seu horário online!",
-  keywords: ["podologia", "podóloga em portugal", "saúde dos pés", "tratamento de fungos", "unhas encravadas", "pedicure medical", "stephanie oliveira"],
+  description: "Tratamento especializado de podologia na Amora, Seixal. Especialista em unhas encravadas, fungos, calosidades e pedicure medical. Agende já a sua consulta online com a Stephanie Oliveira!",
+  keywords: [
+    "podologia amora",
+    "podóloga seixal",
+    "podologista amora seixal",
+    "tratamento pés amora",
+    "unhas encravadas seixal",
+    "fungos unhas tratamento",
+    "pedicure medical amora",
+    "stephanie oliveira podologia",
+    "saúde dos pés portugal",
+    "calosidades tratamento"
+  ],
   authors: [{ name: "Stephanie Oliveira" }],
   creator: "Stephanie Oliveira",
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     type: "website",
     locale: "pt_PT",
-    url: "https://stepodologia.com",
-    title: "Stephanie Oliveira | Podologia Profissional",
-    description: "Cuide da saúde dos seus pés com quem entende. Agendamento online simples e rápido.",
+    url: "https://www.steoliveirapodologa.pt",
+    title: "Stephanie Oliveira | Podologia Profissional na Amora, Seixal",
+    description: "Cuide da saúde dos seus pés com quem entende. Agendamento online simples e rápido para consultas na Amora.",
     siteName: "Stephanie Oliveira Podologia",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Stephanie Oliveira Podologia",
+        alt: "Stephanie Oliveira Podologia Amora",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Stephanie Oliveira | Podologia Profissional",
-    description: "Saúde dos pés com excelência. Agende online!",
+    title: "Stephanie Oliveira | Podóloga em Amora",
+    description: "Saúde dos pés com excelência. Agende online na Amora, Seixal!",
     images: ["/og-image.jpg"],
   },
   icons: {
@@ -73,7 +87,7 @@ export default function RootLayout({
         <ErrorBoundary>
           {children}
         </ErrorBoundary>
-        <WhatsAppButton />
+
         <Toaster position="top-right" richColors />
         <CookieBanner />
       </body>

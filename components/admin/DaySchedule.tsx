@@ -62,10 +62,22 @@ export function DaySchedule({
     }
 
     const draggedAppointmentId = active.id as string;
-    const newTimeSlot = over.id as string;
+    const overId = over.id as string;
 
-    // Extrair apenas o horário do timeSlot (formato: "2024-02-04-09:00")
-    const newTime = newTimeSlot.split('-').slice(-1)[0];
+    // Detectar se soltou sobre um agendamento ou um slot
+    const targetAppointment = appointments.find(apt => apt.id === overId);
+
+    let newTime: string;
+    if (targetAppointment) {
+      newTime = targetAppointment.hora;
+    } else if (overId.startsWith('slot-')) {
+      // Se soltou num slot vazio, extrair o horário do ID do slot (formato: "slot-YYYY-MM-DD-HH:MM")
+      newTime = overId.split('-').slice(-1)[0];
+    } else {
+      // Se não é algo reconhecido (ex: drop em lugar inválido), cancelar
+      setActiveAppointment(null);
+      return;
+    }
 
     // Encontrar o agendamento arrastado
     const draggedAppointment = appointments.find((apt: Appointment) => apt.id === draggedAppointmentId);
@@ -75,16 +87,16 @@ export function DaySchedule({
       return;
     }
 
-    // Verificar se já existe um agendamento no horário de destino
-    const targetAppointment = appointments.find(
+    // Se houver um agendamento no destino (seja detectado pelo ID ou pelo horário)
+    const activeTargetAppointment = targetAppointment || appointments.find(
       (apt: Appointment) =>
         apt.data === dateStr &&
         apt.hora === newTime &&
         apt.id !== draggedAppointmentId
     );
 
-    if (targetAppointment && onSwapAppointments) {
-      onSwapAppointments(draggedAppointmentId, targetAppointment.id);
+    if (activeTargetAppointment && onSwapAppointments) {
+      onSwapAppointments(draggedAppointmentId, activeTargetAppointment.id);
     } else {
       onUpdateAppointment(draggedAppointmentId, newTime);
     }
@@ -93,7 +105,7 @@ export function DaySchedule({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-visible">
       {/* Header */}
       <div className={`${isClosed
         ? 'bg-gradient-to-r from-gray-500 to-gray-600'
@@ -134,13 +146,17 @@ export function DaySchedule({
         >
           <div className="divide-y divide-gray-200">
             {getHourlyTimes(dateStr).map((time) => {
-              const slotId = `${dateStr}-${time}`;
+              const slotId = `slot-${dateStr}-${time}`;
               const slotStart = timeToMinutes(time);
-              const slotEnd = slotStart + 60;
+              const slotEnd = slotStart + SCHEDULE.SLOT_INTERVAL;
 
               const slotAppointments = appointments.filter((apt: Appointment) => {
                 const aptTime = timeToMinutes(apt.hora);
-                return apt.data === dateStr && aptTime >= slotStart && aptTime < slotEnd;
+                const isInSlot = apt.data === dateStr && aptTime >= slotStart && aptTime < slotEnd;
+                if (apt.nome.includes('Rui') && time === '08:30') {
+                  console.log(`Debug Rui: data=${apt.data}, dateStr=${dateStr}, aptTime=${aptTime}, slot=${slotStart}-${slotEnd}, equal=${apt.data === dateStr}`);
+                }
+                return isInSlot;
               });
 
               return (

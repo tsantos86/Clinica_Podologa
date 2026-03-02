@@ -273,9 +273,20 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('❌ Erro ao criar agendamento:', error);
       return NextResponse.json(
-        { error: 'Erro ao conectar com o servidor. Tente novamente.' },
+        { error: `Erro na Base de Dados: ${error.message} (Código: ${error.code})` },
         { status: 500 }
       );
+    }
+
+    let produtosObj = [];
+    try {
+      if (inserted.produtos) {
+        produtosObj = typeof inserted.produtos === 'string'
+          ? JSON.parse(inserted.produtos)
+          : inserted.produtos;
+      }
+    } catch (e) {
+      console.error('❌ Erro ao processar produtos:', e);
     }
 
     const agendamento = {
@@ -293,23 +304,29 @@ export async function POST(request: NextRequest) {
       valorPagamento: inserted.valor_pagamento,
       status: inserted.status,
       duracaoMinutos: inserted.duracao_minutos,
-      produtos: inserted.produtos ? JSON.parse(inserted.produtos) : [],
+      produtos: produtosObj,
       createdAt: inserted.created_at,
       updatedAt: inserted.updated_at,
     };
 
-    // Enviar notificações (async, não bloqueia)
-    sendBookingEmails({ nome, email, servico, data, hora, preco, telefone, observacoes, tipoPagamento, valorPagamento });
+    // Enviar notificações - sem await para não bloquear o cliente
+    // Mas embrulhado em try-catch interno
+    (async () => {
+      try {
+        await sendBookingEmails({ nome, email, servico, data, hora, preco, telefone, observacoes, tipoPagamento, valorPagamento });
 
-    if (normalizedStatus === 'confirmed') {
-      // Agendamento já confirmado (ex: pagamento imediato)
-      WhatsAppService.sendConfirmation(nome, servico, data, hora, telefone)
-        .catch(err => console.error('⚠️ Falha ao enviar WhatsApp de confirmação:', err));
-    } else {
-      // Agendamento pendente — enviar msg de "recebido" ao cliente
-      WhatsAppService.sendBookingReceived(nome, servico, data, hora, telefone)
-        .catch(err => console.error('⚠️ Falha ao enviar WhatsApp de agendamento recebido:', err));
-    }
+        if (normalizedStatus === 'confirmed') {
+          await WhatsAppService.sendConfirmation(nome, servico, data, hora, telefone);
+        } else {
+          await WhatsAppService.sendBookingReceived(nome, servico, data, hora, telefone);
+        }
+
+        // Notificar Admin (Stephanie) também via WhatsApp
+        await WhatsAppService.notifyAdmin(nome, servico, data, hora);
+      } catch (notifError) {
+        console.error('⚠️ Erro nas notificações em background:', notifError);
+      }
+    })();
 
     return NextResponse.json(
       {
@@ -322,7 +339,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ Erro ao criar agendamento:', error);
     return NextResponse.json(
-      { error: 'Erro ao conectar com o servidor. Tente novamente.' },
+      { error: `Erro Inesperado: ${error instanceof Error ? error.message : 'Erro desconhecido'}` },
       { status: 500 }
     );
   }
@@ -391,7 +408,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ Erro ao buscar agendamentos:', error);
     return NextResponse.json(
-      { error: 'Erro ao conectar com o servidor. Tente novamente.' },
+      { error: `Erro Geral GET: ${error instanceof Error ? error.message : 'Erro desconhecido'}` },
       { status: 500 }
     );
   }

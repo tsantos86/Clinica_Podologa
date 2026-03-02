@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ Erro ao enviar email:', error);
     return NextResponse.json(
-      { error: 'Erro ao conectar com o servidor. Tente novamente.' },
+      { error: `Erro SMTP/Email: ${error instanceof Error ? error.message : 'Erro desconhecido'}` },
       { status: 500 }
     );
   }

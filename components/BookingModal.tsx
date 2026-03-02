@@ -24,6 +24,7 @@ import {
   parseDuration,
   generateTimeSlots,
   getHourlyTimes,
+  getDaySchedule,
 } from '@/lib/utils/schedule';
 import { formatDateLong, formatDateShort, dateToString, isValidPhone, isValidEmail } from '@/lib/formatters';
 import { AppointmentService } from '@/lib/api';
@@ -143,7 +144,7 @@ const BookingModal = () => {
           duracaoMinutos: a.duracaoMinutos || 60,
         }));
 
-      const slotsForDay = generateTimeSlots(date, true);
+      const slotsForDay = generateTimeSlots(date, false);
       // Filter available slots based on service duration + hygienization + overlaps
       const available = slotsForDay.filter(time =>
         isSlotAvailable(time, selectedServiceDuration, bookedAppointments, date)
@@ -155,7 +156,7 @@ const BookingModal = () => {
       }
     } catch (error) {
       toast.error(ERROR_MESSAGES.NETWORK);
-      setAvailableSlots(generateTimeSlots(date, true));
+      setAvailableSlots(generateTimeSlots(date, false));
     } finally {
       setLoadingSlots(false);
     }
@@ -228,7 +229,7 @@ const BookingModal = () => {
     }
 
     if (!bookingData.phone || !isValidPhone(bookingData.phone)) {
-      toast.error('📞 Por favor, insira um número de telefone válido (9 dígitos)');
+      toast.error('📞 Por favor, insira um número de telefone válido');
       return;
     }
 
@@ -262,7 +263,8 @@ const BookingModal = () => {
         duration: 5000,
       });
 
-      closeModal();
+      // Em vez de fechar, vamos para o passo de sucesso
+      setCurrentStep(4);
     } catch (error) {
       toast.dismiss(loadingToast);
       const message = error instanceof Error ? error.message : ERROR_MESSAGES.GENERIC;
@@ -332,9 +334,10 @@ const BookingModal = () => {
   };
 
   const steps = [
-    { number: 1, title: 'Serviços de Podologia', icon: Calendar },
+    { number: 1, title: 'Serviços', icon: Calendar },
     { number: 2, title: 'Agendamento', icon: Clock },
     { number: 3, title: 'Pagamento', icon: CreditCard },
+    { number: 4, title: 'Concluído', icon: Check },
   ];
 
   const getCurrentService = () => getServiceById(bookingData.serviceId || '');
@@ -345,6 +348,27 @@ const BookingModal = () => {
     const h = Math.floor(totalMin / 60);
     const m = totalMin % 60;
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  };
+
+  const getGoogleCalendarUrl = () => {
+    if (!bookingData.date || !bookingData.time || !bookingData.serviceName) return '#';
+
+    const cleanDate = bookingData.date.replace(/-/g, '');
+    const cleanTime = bookingData.time.replace(':', '');
+    const startDateTime = `${cleanDate}T${cleanTime}00`;
+
+    // End time calculation
+    const [h, m] = bookingData.time.split(':').map(Number);
+    const totalMinutes = h * 60 + m + selectedServiceDuration;
+    const endH = Math.floor(totalMinutes / 60);
+    const endM = totalMinutes % 60;
+    const endDateTime = `${cleanDate}T${String(endH).padStart(2, '0')}${String(endM).padStart(2, '0')}00`;
+
+    const title = encodeURIComponent(`Podologia: ${bookingData.serviceName}`);
+    const details = encodeURIComponent(`Consulta: ${bookingData.serviceName}\nProfissional: Stephanie Oliveira\nObrigada por confiar no meu trabalho!`);
+    const location = encodeURIComponent('Rua Luz Soriano, nº 20, Loja 16 – Centro Comercial Girassol, 2845-120 Amora');
+
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateTime}/${endDateTime}&details=${details}&location=${location}`;
   };
 
   return (
@@ -445,14 +469,24 @@ const BookingModal = () => {
                           <div className="text-sm text-text-secondary">
                             {service.description}
                           </div>
+                          {service.details && service.details.length > 0 && (
+                            <div className="flex flex-col gap-1 mt-1.5 mb-2">
+                              {service.details.map((detail, i) => (
+                                <div key={i} className="text-[11px] text-black leading-tight flex items-start gap-1 font-medium">
+                                  <span className="flex-shrink-0 text-black">•</span>
+                                  <span>{detail}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                           {service.duration && (
-                            <div className="text-xs text-text-secondary mt-0.5">
+                            <div className="text-xs text-text-secondary mt-1">
                               ⏱️ {service.duration}
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="text-xl font-bold text-primary">
+                      <div className="text-xl font-bold text-text-primary">
                         {service.price}€
                       </div>
                     </button>
@@ -488,6 +522,17 @@ const BookingModal = () => {
                         <p className="text-sm text-text-secondary">
                           {getCurrentService()?.description}
                         </p>
+                        {getCurrentService()?.details && (getCurrentService()?.details?.length ?? 0) > 0 && (
+                          <div className="flex flex-col gap-1 mt-2 mb-3">
+                            <p className="text-[10px] font-bold text-text-secondary/60 uppercase tracking-widest">Inclui:</p>
+                            {getCurrentService()?.details?.map((detail, i) => (
+                              <div key={i} className="text-[11px] text-black leading-tight flex items-start gap-1 font-medium">
+                                <span className="flex-shrink-0 text-black">•</span>
+                                <span>{detail}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         {getCurrentService()?.duration && (
                           <p className="text-xs text-text-secondary mt-1">
                             ⏱️ Duração estimada: {getCurrentService()?.duration}
@@ -495,7 +540,7 @@ const BookingModal = () => {
                         )}
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-primary">
+                        <div className="text-2xl font-bold text-text-primary">
                           {getServiceById(bookingData.serviceId || '')?.price}€
                         </div>
                         <div className="text-xs text-text-secondary">valor serviço</div>
@@ -538,10 +583,10 @@ const BookingModal = () => {
                       {bookingData.date && isWorkingDay(bookingData.date) && blockedDatesSet.has(bookingData.date) && (
                         <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded mt-2">
                           <p className="text-red-700 text-sm font-medium">
-                            🚫 Este dia está bloqueado e indisponível para agendamentos.
+                            🚫 Este dia está indisponível para agendamentos.
                           </p>
                           <p className="text-red-600 text-xs mt-1">
-                            A profissional não atende neste dia. Por favor, escolha outra data.
+                            Este horário já está totalmente preenchido. Escolha outro horário disponível.
                           </p>
                         </div>
                       )}
@@ -554,7 +599,7 @@ const BookingModal = () => {
                           {loadingSlots && <span className="text-primary ml-2">Verificando...</span>}
                         </label>
                         <p className="text-xs text-text-secondary mb-3">
-                          Horários disponíveis • Funcionamento: {bookingData.date && new Date(bookingData.date + 'T00:00:00').getDay() === 6 ? '09:00' : SCHEDULE.OPENING_TIME} – {SCHEDULE.CLOSING_TIME}
+                          Horários disponíveis • Funcionamento: {bookingData.date && getDaySchedule(bookingData.date).opening} – {bookingData.date && getDaySchedule(bookingData.date).lastStart}
                         </p>
                         <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
                           {availableSlots.map((time) => (
@@ -614,10 +659,13 @@ const BookingModal = () => {
                           type="tel"
                           value={bookingData.phone || ''}
                           onChange={(e) => setBookingData({ ...bookingData, phone: e.target.value })}
-                          placeholder="+351 XXX XXX XXX"
+                          placeholder="912 345 678 ou +351..."
                           className="input-field"
                           required
                         />
+                        <p className="text-[10px] text-text-secondary mt-1">
+                          Suporta números de Portugal e internacionais (ex: Brasil +55).
+                        </p>
                       </div>
 
                       <div>
@@ -657,7 +705,7 @@ const BookingModal = () => {
                             <div key={p.id} className="flex items-center justify-between p-2 bg-white rounded-lg border border-gray-200">
                               <span className="text-sm font-medium">{p.name}</span>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-primary">{p.price}€</span>
+                                <span className="text-sm font-bold text-text-primary">{p.price}€</span>
                                 <button onClick={() => removeProduct(p.id)} className="text-red-400 hover:text-red-600">
                                   <X className="w-4 h-4" />
                                 </button>
@@ -693,7 +741,7 @@ const BookingModal = () => {
                                   <span>{product.icon || '📦'}</span>
                                   <span className="text-sm">{product.name}</span>
                                 </div>
-                                <span className="text-sm font-bold text-primary">{product.price}€</span>
+                                <span className="text-sm font-bold text-text-primary">{product.price}€</span>
                               </button>
                             ))
                           }
@@ -789,7 +837,7 @@ const BookingModal = () => {
 
                       <div className="flex justify-between items-center py-3 border-t border-b">
                         <span className="text-text-secondary">Valor total:</span>
-                        <span className="text-xl font-bold text-primary">{bookingData.price}€</span>
+                        <span className="text-xl font-bold text-text-primary">{bookingData.price}€</span>
                       </div>
                     </div>
                   </div>
@@ -822,9 +870,9 @@ const BookingModal = () => {
                         <div className="border-t border-gray-100" />
 
                         <div className="flex items-start gap-3">
-                          <span className="text-xl">💵</span>
-                          <p className="text-sm text-gray-600">
-                            O pagamento será feito <strong className="text-text-primary">presencialmente</strong> no dia da consulta.
+                          <span className="text-xl">⚠️</span>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            Sua marcação será confirmada após o pagamento do sinal. Caso necessite cancelar ou reagendar, solicitamos aviso com no mínimo 24h de antecedência. Em caso de não comparecimento, o sinal não será devolvido. Agradecemos a compreensão.
                           </p>
                         </div>
 
@@ -854,7 +902,7 @@ const BookingModal = () => {
                                   Reserve agora e pague o restante no dia.
                                 </div>
                                 <div className="mt-2 flex items-center gap-2">
-                                  <span className="text-lg font-bold text-primary">{paymentSettings.signalAmount}€</span>
+                                  <span className="text-lg font-bold text-text-primary">{paymentSettings.signalAmount}€</span>
                                   <span className="text-xs text-text-secondary">de {bookingData.price}€</span>
                                 </div>
                               </div>
@@ -886,7 +934,7 @@ const BookingModal = () => {
                                 Tudo pago agora, sem saldo no dia.
                               </div>
                               <div className="mt-2">
-                                <span className="text-lg font-bold text-primary">{bookingData.price}€</span>
+                                <span className="text-lg font-bold text-text-primary">{bookingData.price}€</span>
                                 <span className="text-xs text-success ml-2">✅ Sem saldo pendente</span>
                               </div>
                             </div>
@@ -912,7 +960,7 @@ const BookingModal = () => {
                                 Pague tudo no dia da consulta (sem pagamento online).
                               </div>
                               <div className="mt-2">
-                                <span className="text-lg font-bold text-primary">{bookingData.price}€</span>
+                                <span className="text-lg font-bold text-text-primary">{bookingData.price}€</span>
                                 <span className="text-xs text-gray-400 ml-2">a pagar no dia</span>
                               </div>
                             </div>
@@ -934,10 +982,92 @@ const BookingModal = () => {
                       </span>
                     ) : (
                       bookingData.paymentType === 'onsite' || !paymentSettings.mbwayEnabled
-                        ? '✅ Confirmar agendamento'
-                        : `✅ Confirmar e reservar - ${bookingData.paymentAmount}€`
+                        ? '🚀 Finalizar Marcação Agora'
+                        : `🚀 Finalizar Marcação - ${bookingData.paymentAmount}€`
                     )}
                   </button>
+                </motion.div>
+              )}
+
+              {/* Step 4: Success / Confirmation */}
+              {currentStep === 4 && (
+                <motion.div
+                  key="step4"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-8"
+                >
+                  <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
+                    <Check className="w-10 h-10" />
+                  </div>
+
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Marcação Concluída! 🎉</h3>
+                  <p className="text-text-secondary mb-6">
+                    Obrigada, <strong>{bookingData.name?.split(' ')[0]}</strong>! O seu agendamento para <strong>{bookingData.serviceName}</strong> foi registado com sucesso.
+                  </p>
+
+                  <div className="bg-primary/5 rounded-2xl p-6 mb-8 border border-primary/10">
+                    <div className="flex flex-col items-center gap-2 mb-4">
+                      <div className="text-sm font-semibold text-primary uppercase tracking-wider">🗓️ Resumo</div>
+                      <div className="text-lg font-bold">{new Date(bookingData.date + 'T00:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                      <div className="text-3xl font-black text-primary">{bookingData.time}</div>
+                    </div>
+                    <div className="pt-4 mt-4 border-t border-primary/10">
+                      <div className="p-5 bg-white/80 rounded-2xl border border-primary/10 text-left space-y-4 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl">💳</span>
+                          <div>
+                            <p className="font-semibold text-text-primary text-sm">Formas de pagamento:</p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100">
+                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" /></svg>
+                                Revolut
+                              </span>
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-medium border border-green-100">
+                                📱 MB Way
+                              </span>
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs font-medium border border-amber-100">
+                                💵 Dinheiro
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-gray-100" />
+
+                        <div className="flex items-start gap-3">
+                          <span className="text-xl">⚠️</span>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            Sua marcação será confirmada após o pagamento do sinal. Caso necessite cancelar ou reagendar, solicitamos aviso com no mínimo 24h de antecedência. Em caso de não comparecimento, o sinal não será devolvido. Agradecemos a compreensão.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <a
+                      href={getGoogleCalendarUrl()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-3 w-full p-4 bg-white border-2 border-gray-200 rounded-button font-bold text-gray-700 hover:border-primary hover:bg-primary/5 transition-all group"
+                    >
+                      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.5 12c0-.5-.1-1-.2-1.5H12v3h6c-.3 1.3-1.1 2.4-2.2 3.1v2.6h3.6c2.1-1.9 3.1-4.7 3.1-7.2z" />
+                        <path fill="#34A853" d="M12 22.5c2.8 0 5.2-.9 7-2.6l-3.6-2.6c-1 .7-2.3 1.2-3.4 1.2-2.7 0-4.9-1.8-5.7-4.3H2.6v2.8c1.7 3.4 5.2 5.5 9.4 5.5z" />
+                        <path fill="#FBBC05" d="M6.3 14.2c-.2-.6-.3-1.3-.3-2.2s.1-1.3.3-2.2V7H2.6c-.6 1.4-1 3-1 4.7s.4 3.3 1 4.7l3.7-2.2z" />
+                        <path fill="#EA4335" d="M12 6.3c1.5 0 2.9.5 4 1.5l3-3C17.2 3 14.8 2.5 12 2.5 7.8 2.5 4.3 4.6 2.6 8L6.3 11c.8-2.5 3-4.7 5.7-4.7z" />
+                      </svg>
+                      Adicionar ao Google Calendar 📅
+                    </a>
+
+                    <button
+                      onClick={closeModal}
+                      className="btn-primary w-full py-4 text-lg font-bold"
+                    >
+                      Voltar ao Início ✔️
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </>

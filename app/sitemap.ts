@@ -1,18 +1,18 @@
-import type { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://stepodologia.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.steoliveirapodologa.pt';
 
     return [
         {
             url: baseUrl,
             lastModified: new Date(),
-            changeFrequency: 'weekly',
+            changeFrequency: 'monthly',
             priority: 1,
         },
         {
             url: `${baseUrl}/privacidade`,
-            lastModified: new Date('2026-02-01'),
+            lastModified: new Date(),
             changeFrequency: 'yearly',
             priority: 0.3,
         },

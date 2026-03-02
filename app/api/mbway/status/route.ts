@@ -57,7 +57,15 @@ export async function GET(request: NextRequest) {
           appointment.data,
           appointment.hora,
           appointment.telefone
-        ).catch(err => console.error('⚠️ Falha ao enviar WhatsApp:', err));
+        ).catch(err => console.error('⚠️ Falha ao enviar WhatsApp ao cliente:', err));
+
+        // Notificar Admin (Stephanie) sobre o pagamento confirmado
+        WhatsAppService.notifyAdmin(
+          appointment.nome,
+          appointment.servico,
+          appointment.data,
+          appointment.hora
+        ).catch(err => console.error('⚠️ Falha ao notificar admin sobre pagamento:', err));
       }
     }
 

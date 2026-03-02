@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X, Calendar, LayoutDashboard, Users, Settings, LogOut, Image, MessageSquare, FileText } from 'lucide-react';
+import { Menu, X, Calendar, LayoutDashboard, Users, Settings, LogOut, Image, MessageSquare, FileText, Scissors, Package } from 'lucide-react';
 import { useState } from 'react';
 
 interface MobileSidebarProps {
@@ -14,13 +14,15 @@ const menuItems = [
   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { id: 'agendamentos', icon: Calendar, label: 'Agendamentos' },
   { id: 'clientes', icon: Users, label: 'Clientes' },
-  { id: 'servicos-fotos', icon: Image, label: 'Serviços & Fotos' },
+  { id: 'gestao-servicos', icon: Scissors, label: 'Serviços' },
+  { id: 'servicos-fotos', icon: Image, label: 'Fotos Serviços' },
+  { id: 'gestao-produtos', icon: Package, label: 'Produtos' },
   { id: 'testemunhos', icon: MessageSquare, label: 'Testemunhos' },
   { id: 'registos', icon: FileText, label: 'Registos' },
   { id: 'configuracoes', icon: Settings, label: 'Configurações' },
 ];
 
-export function MobileSidebar({ onLogout, onMenuChange, activeItem = 'agendamentos', userEmail }: MobileSidebarProps) {
+export function MobileSidebar({ onLogout, onMenuChange, activeItem = 'dashboard', userEmail }: MobileSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const displayEmail = userEmail || 'admin';
   const initials = displayEmail.substring(0, 1).toUpperCase();

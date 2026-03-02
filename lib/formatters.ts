@@ -116,8 +116,10 @@ export function unformatPhone(phone: string): string {
  * Valida número de telefone português
  */
 export function isValidPhone(phone: string): boolean {
-  const cleaned = unformatPhone(phone);
-  return /^[0-9]{9}$/.test(cleaned);
+  // Remove espaços, parênteses e traços para validação
+  const cleaned = phone.replace(/[\s\(\)\-]/g, '');
+  // Aceita de 9 a 15 números, opcionalmente começando com +
+  return /^\+?[0-9]{9,15}$/.test(cleaned);
 }
 
 /**
@@ -128,10 +130,10 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Valida se é um horário permitido
+ * Valida se é um horário permitido (respeita o SLOT_INTERVAL de 30 min)
  */
-export function isValidHourlyTime(time: string): boolean {
-  // Verifica se o horário está na lista padrão (08:30...) ou na de Sábado (09:00...)
+export function isValidScheduleTime(time: string): boolean {
+  // Verifica se o horário está na lista padrão de slots de 30 min
   const weekdaySlots = HOURLY_TIMES;
   const saturdaySlots = getHourlyTimes('2026-02-14'); // Qualquer sábado para teste de geração
 

@@ -20,7 +20,7 @@ const PricingModal = () => {
   }, {});
 
   const categoryColors: Record<string, string> = {
-    'Pedicura': 'from-orange-500 to-orange-400',
+    'Podologia': 'from-orange-500 to-orange-400',
     'Verniz': 'from-slate-700 to-slate-600',
     'Outros': 'from-indigo-500 to-indigo-400',
   };
@@ -73,7 +73,7 @@ const PricingModal = () => {
                           )}
                         </div>
                       </div>
-                      <span className="text-xl font-bold text-primary">
+                      <span className="text-xl font-bold text-text-primary">
                         {item.price}€
                       </span>
                     </motion.div>

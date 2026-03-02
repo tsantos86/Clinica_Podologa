@@ -44,7 +44,7 @@ export async function GET() {
                     price: Number(s.price),
                     defaultPrice: Number(s.price),
                     icon: s.icon || '🦶',
-                    category: s.category || 'Pedicura',
+                    category: s.category || 'Podologia',
                     active: s.active !== false,
                     photoUrl: photoMap[s.id] || null,
                 }));
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
                 duration_minutes: calcDuration,
                 price: Number(price),
                 icon: icon || '🦶',
-                category: category || 'Pedicura',
+                category: category || 'Podologia',
                 active: true,
             })
             .select()

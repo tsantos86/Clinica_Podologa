@@ -79,22 +79,42 @@ export default function ServiceCard({
             <h4 className="font-bold text-base text-text-primary leading-tight mb-2 line-clamp-2">
               {service.name}
             </h4>
-            <p className="text-sm text-text-secondary line-clamp-2 mb-2">
+            <p className="text-sm text-text-secondary line-clamp-2 mb-4">
               {service.description}
             </p>
+
+            {/* Included items (Details) */}
+            {service.details && service.details.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border/40">
+                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] mb-3">
+                  Inclui:
+                </p>
+                <div className="flex flex-col gap-2">
+                  {service.details.map((detail, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm text-black leading-tight">
+                      <span className="text-black font-bold flex-shrink-0">•</span>
+                      <span>{detail}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Info Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-border/30">
+          <div className="flex items-center justify-between pt-4 mt-auto border-t border-border/30">
             <div className="flex flex-col">
               {service.duration && (
-                <span className="text-xs text-text-light">⏱️ {service.duration}</span>
-              )}
-              {service.details && service.details.length > 0 && (
-                <span className="text-xs text-text-light">📋 {service.details.length} passos</span>
+                <span className="text-xs text-text-light flex items-center gap-1">
+                  <span className="opacity-70 text-[10px]">⏱️</span> {service.duration}
+                </span>
               )}
             </div>
-            <span className="text-lg font-bold text-primary">{service.price}€</span>
+            <div className="flex flex-col items-end">
+              <span className="text-xl font-black text-text-primary tracking-tight">
+                {service.price}€
+              </span>
+            </div>
           </div>
         </div>
       </div>

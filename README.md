@@ -119,15 +119,14 @@ stepodologa-nextjs/
 
 ### 🔄 A Implementar
 
-- [ ] Integração completa IFTHENPAY MBWay
-- [ ] Banco de dados (Prisma + PostgreSQL/MongoDB)
-- [ ] Painel administrativo
-- [ ] Sistema de autenticação
-- [ ] Notificações por email/SMS
-- [ ] Upload de fotos
-- [ ] Calendário interativo avançado
-- [ ] Gestão de horários disponíveis
-- [ ] Relatórios e estatísticas
+- [ ] Integração completa IFTHENPAY MBWay (Em progresso)
+- [x] Banco de dados (Supabase / PostgreSQL)
+- [x] Painel administrativo premium
+- [x] Sistema de autenticação (Middleware/Supabase)
+- [x] Notificações por WhatsApp
+- [x] Lembretes automáticos 24h (Vercel Cron)
+- [x] Upload de fotos (Supabase Storage)
+- [x] Gestão de horários e serviços
 
 ## 🎨 Personalização
 
@@ -163,15 +162,34 @@ Adicione/edite serviços em `lib/services.ts`:
 
 ## 🚀 Deploy
 
-### Vercel (Recomendado)
+### Configuração do Domínio e WhatsApp (Meta)
 
-```bash
-# Instalar Vercel CLI
-npm i -g vercel
+Para que o WhatsApp funcione corretamente em produção, siga estes passos:
 
-# Deploy
-vercel
-```
+#### 1. Vercel (Configuração do Domínio)
+1. No painel da **Vercel**, vá em *Settings* > *Domains*.
+2. Adicione o seu domínio (ex: `stepodologia.com`).
+3. Siga as instruções de DNS fornecidas pela Vercel.
+
+#### 2. Vercel (Variáveis de Ambiente)
+Adicione as seguintes chaves no painel da Vercel:
+- `WHATSAPP_ACCESS_TOKEN`: Token de acesso permanente gerado no portal Meta.
+- `WHATSAPP_PHONE_NUMBER_ID`: ID do número de telefone no portal Meta.
+- `WHATSAPP_VERIFY_TOKEN`: Um segredo à sua escolha (ex: `podologa_secret_verify`).
+- `WHATSAPP_TEMPLATE_CONFIRMATION`: Nome do template (ex: `agendamento_confirmado`).
+- `WHATSAPP_TEMPLATE_REMINDER`: Nome do template (ex: `lembrete_consulta_24h`).
+- `CRON_SECRET`: Chave secreta para proteger o endpoint de Cron.
+- `NEXT_PUBLIC_BACKEND_URL`: URL do seu backend de pagamentos (se aplicável).
+
+#### 3. Meta Developer Portal (WhatsApp Cloud API)
+1. Crie uma App do tipo **Business** no [Meta Developers](https://developers.facebook.com/).
+2. Adicione o produto **WhatsApp**.
+3. Em *WhatsApp* > *Configuration*:
+   - **Callback URL**: `https://seu-dominio.com/api/webhooks/whatsapp`
+   - **Verify Token**: O mesmo definido no Vercel (`WHATSAPP_VERIFY_TOKEN`).
+4. Clique em **Verify and Save**.
+5. Em *Webhook fields*, subscreva o campo **messages**.
+6. Em *API Setup*, configure o número de telefone e obtenha o `Phone Number ID`.
 
 ### Outras Plataformas
 

@@ -2,7 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { User, Phone, GripVertical, Check, X, Clock, ShoppingBag } from 'lucide-react';
+import { User, Phone, GripVertical, Check, X, Clock, ShoppingBag, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect, useRef } from 'react';
 import type { Appointment } from '@/types';
@@ -21,6 +21,7 @@ export function CompactAppointmentCard({
   onStatusChange
 }: CompactAppointmentCardProps) {
   const [showActions, setShowActions] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -94,6 +95,11 @@ export function CompactAppointmentCard({
             className="flex-1 min-w-0"
             onClick={(e) => {
               e.stopPropagation();
+              if (!showActions && cardRef.current) {
+                const rect = cardRef.current.getBoundingClientRect();
+                const spaceBelow = window.innerHeight - rect.bottom;
+                setDropUp(spaceBelow < 250);
+              }
               setShowActions(!showActions);
             }}
           >
@@ -128,14 +134,29 @@ export function CompactAppointmentCard({
                   </span>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-gray-500">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-gray-500 mt-1">
                   <div className="flex items-center gap-1">
                     <Phone className="w-3 h-3" />
                     <span className="truncate">{appointment.telefone}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{appointment.hora}</span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span>{appointment.hora}</span>
+                    </div>
+
+                    {/* Botão WhatsApp Direto */}
+                    <a
+                      href={`https://wa.me/${appointment.telefone.replace(/\D/g, '').startsWith('9') ? '351' + appointment.telefone.replace(/\D/g, '') : appointment.telefone.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 text-[#25D366] hover:text-[#128C7E] font-medium transition-colors"
+                      title="Enviar mensagem via WhatsApp"
+                    >
+                      <MessageSquare className="w-3 h-3" />
+                      <span>WhatsApp</span>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -153,7 +174,7 @@ export function CompactAppointmentCard({
         {/* Quick Actions */}
         {showActions && (
           <div
-            className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden"
+            className={`absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden ${dropUp ? 'bottom-full mb-1' : 'top-full mt-1'}`}
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -161,48 +182,142 @@ export function CompactAppointmentCard({
                 if (onEdit) onEdit(appointment);
                 setShowActions(false);
               }}
-              className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100"
+              className="w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100"
             >
               📝 Editar detalhes
             </button>
 
             {(appointment.status === 'pending' || appointment.status === 'cancelled') && (
-              <button
-                onClick={() => {
-                  if (onStatusChange) onStatusChange(appointment.id, 'confirmed');
-                  setShowActions(false);
-                }}
-                className="w-full text-left px-4 py-2.5 text-sm hover:bg-green-50 text-green-700 transition-colors border-b border-gray-100"
-              >
-                <Check className="w-4 h-4 inline mr-2" />
-                Confirmar agendamento
-              </button>
+              <div className="flex border-b border-gray-100">
+                <button
+                  onClick={() => {
+                    if (onStatusChange) onStatusChange(appointment.id, 'confirmed');
+                    setShowActions(false);
+                  }}
+                  className="flex-1 text-left px-4 py-3 text-sm hover:bg-green-50 text-green-700 transition-colors border-r border-gray-100 font-medium"
+                >
+                  <Check className="w-4 h-4 inline mr-2" />
+                  Confirmar
+                </button>
+                <a
+                  href={`https://wa.me/${appointment.telefone.replace(/\D/g, '').startsWith('9') ? '351' + appointment.telefone.replace(/\D/g, '') : appointment.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá! Tudo bem? 😊
+
+A sua marcação está confirmada para o dia ${appointment.data} às ${appointment.hora}.
+
+📍 Morada:
+Rua Luz Soriano, nº 20, 
+Loja 16 – Centro Comercial Girassol
+2845-120 Amora
+
+⚠️ No dia anterior, caso a marcação não seja confirmada até às 19h, será cancelada automaticamente.
+ 
+Tolerância máxima de atraso:10 minutos. 
+💳 Formas de pagamento:
+Revolut, MB Way ou Dinheiro
+
+Obrigada,
+Stephanie Oliveira`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 text-center px-4 py-3 text-sm bg-green-500 text-white hover:bg-green-600 transition-colors font-medium flex items-center justify-center gap-2"
+                  onClick={() => {
+                    if (appointment.status === 'pending' && onStatusChange) {
+                      onStatusChange(appointment.id, 'confirmed');
+                    }
+                    setShowActions(false);
+                  }}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Confirmar & Notificar</span>
+                </a>
+              </div>
             )}
 
             {appointment.status === 'confirmed' && (
-              <button
-                onClick={() => {
-                  if (onStatusChange) onStatusChange(appointment.id, 'completed');
-                  setShowActions(false);
-                }}
-                className="w-full text-left px-4 py-2.5 text-sm hover:bg-blue-50 text-blue-700 transition-colors border-b border-gray-100"
-              >
-                ✓✓ Marcar como concluído
-              </button>
+              <div className="flex flex-col border-b border-gray-100">
+                <div className="flex border-b border-gray-100">
+                  <button
+                    onClick={() => {
+                      if (onStatusChange) onStatusChange(appointment.id, 'completed');
+                      setShowActions(false);
+                    }}
+                    className="flex-1 text-left px-4 py-3 text-sm hover:bg-blue-50 text-blue-700 transition-colors border-r border-gray-100 font-medium"
+                  >
+                    <Check className="w-4 h-4 inline mr-2" />
+                    Concluir
+                  </button>
+                  <a
+                    href={`https://wa.me/${appointment.telefone.replace(/\D/g, '').startsWith('9') ? '351' + appointment.telefone.replace(/\D/g, '') : appointment.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${appointment.nome}! O seu atendimento de ${appointment.servico} foi concluído. Espero que tenha gostado! Qualquer dúvida estou ao dispor. 😊`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-center px-4 py-3 text-sm bg-blue-500 text-white hover:bg-blue-600 transition-colors font-medium flex items-center justify-center gap-2"
+                    onClick={() => {
+                      if (onStatusChange) onStatusChange(appointment.id, 'completed');
+                      setShowActions(false);
+                    }}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Concluir & Agradecer</span>
+                  </a>
+                </div>
+                <a
+                  href={`https://wa.me/${(() => {
+                    let p = appointment.telefone.replace(/\D/g, '');
+                    if (p.length === 9 && p.startsWith('9')) return '351' + p;
+                    return p;
+                  })()}?text=${encodeURIComponent(`Olá! Tudo bem? 😊
+
+A sua marcação está confirmada para amanhã .
+
+📍 Morada:
+Rua Luz Soriano, nº 20, 
+Loja 16 – Centro Comercial Girassol
+2845-120 Amora
+
+⚠️ Caso a marcação não seja confirmada até às 19h, será cancelada automaticamente.
+ 
+Tolerância máxima de atraso:10 minutos. 
+💳 Formas de pagamento:
+Revolut, MB Way ou Dinheiro
+
+Obrigada,
+Stephanie Oliveira`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full text-center px-4 py-3 text-sm bg-emerald-500 text-white hover:bg-emerald-600 transition-colors font-medium flex items-center justify-center gap-2"
+                  onClick={() => setShowActions(false)}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Enviar Lembrete (24h)</span>
+                </a>
+              </div>
             )}
 
-            {appointment.status !== 'cancelled' && (
+            <div className="grid grid-cols-2">
               <button
                 onClick={() => {
-                  if (onDelete) onDelete(appointment.id);
+                  if (onEdit) onEdit(appointment);
                   setShowActions(false);
                 }}
-                className="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 text-red-700 transition-colors"
+                className="text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors border-r border-gray-100"
               >
-                <X className="w-4 h-4 inline mr-2" />
-                Cancelar agendamento
+                📝 Editar
               </button>
-            )}
+              {appointment.status !== 'cancelled' ? (
+                <button
+                  onClick={() => {
+                    if (onDelete) onDelete(appointment.id);
+                    setShowActions(false);
+                  }}
+                  className="text-left px-4 py-3 text-sm hover:bg-red-50 text-red-600 transition-colors"
+                >
+                  <X className="w-4 h-4 inline mr-2" />
+                  Cancelar
+                </button>
+              ) : (
+                <span className="px-4 py-3 text-sm text-gray-400 italic">Cancelado</span>
+              )}
+            </div>
           </div>
         )}
       </div>

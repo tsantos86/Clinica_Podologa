@@ -144,7 +144,23 @@ export function AppointmentCard({ appointment, onEdit, onDelete, onStatusChange 
                   let p = appointment.telefone.replace(/\D/g, '');
                   if (p.length === 9 && p.startsWith('9')) return '351' + p;
                   return p;
-                })()}?text=${encodeURIComponent(`Olá ${appointment.nome}! Sou da Clínica de Podologia Sónia Travassos. Gostaria de falar sobre o seu agendamento de ${appointment.servico} no dia ${appointment.data} às ${appointment.hora}.`)}`}
+                })()}?text=${encodeURIComponent(`Olá! Tudo bem? 😊
+
+A sua marcação está confirmada para amanhã .
+
+📍 Morada:
+Rua Luz Soriano, nº 20, 
+Loja 16 – Centro Comercial Girassol
+2845-120 Amora
+
+⚠️ Caso a marcação não seja confirmada até às 19h, será cancelada automaticamente.
+ 
+Tolerância máxima de atraso:10 minutos. 
+💳 Formas de pagamento:
+Revolut, MB Way ou Dinheiro
+
+Obrigada,
+Stephanie Oliveira`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-green-600 rounded-b-lg border-t border-gray-100 flex items-center"

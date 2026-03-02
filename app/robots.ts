@@ -1,16 +1,14 @@
-import type { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://stepodologia.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.steoliveirapodologa.pt';
 
     return {
-        rules: [
-            {
-                userAgent: '*',
-                allow: '/',
-                disallow: ['/admin', '/api/', '/testes'],
-            },
-        ],
+        rules: {
+            userAgent: '*',
+            allow: '/',
+            disallow: ['/admin/', '/api/'],
+        },
         sitemap: `${baseUrl}/sitemap.xml`,
     };
 }

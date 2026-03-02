@@ -37,7 +37,7 @@ export function ServicesManagement({ token }: ServicesManagementProps) {
         durationMinutes: 60,
         price: 0,
         icon: '🦶',
-        category: 'Pedicura',
+        category: 'Podologia',
     });
 
     const fetchServices = useCallback(async () => {
@@ -55,7 +55,7 @@ export function ServicesManagement({ token }: ServicesManagementProps) {
                     duration_minutes: (s.durationMinutes as number) || parseDuration(s.duration as string),
                     price: s.price,
                     icon: s.icon || '🦶',
-                    category: s.category || 'Pedicura',
+                    category: s.category || 'Podologia',
                     active: s.active !== false,
                 })));
             }
@@ -199,7 +199,7 @@ export function ServicesManagement({ token }: ServicesManagementProps) {
             durationMinutes: 60,
             price: 0,
             icon: '🦶',
-            category: 'Pedicura',
+            category: 'Podologia',
         });
     };
 
@@ -337,7 +337,7 @@ function ServiceForm({
                         value={form.category}
                         onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        placeholder="ex: Pedicura"
+                        placeholder="ex: Podologia"
                     />
                 </div>
             </div>

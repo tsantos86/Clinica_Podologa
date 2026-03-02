@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { MapPin, Navigation, Clock, Phone } from 'lucide-react';
 
-const GOOGLE_MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Rua+Luz+Soriano+20+Centro+Comercial+Girassol+2845-120+Amora';
+const GOOGLE_MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Rua+Luz+Soriano+20+Loja+16+Centro+Comercial+Girassol+2845-120+Amora';
 
 const LocationMap = () => {
     return (
@@ -63,14 +63,14 @@ const LocationMap = () => {
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                                 <MapPin className="w-5 h-5 text-primary" />
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-text-primary text-sm group-hover:text-primary transition-colors">
-                                    Centro Comercial Girassol
+                            <div className="flex-1 min-w-0 text-sm">
+                                <p className="font-semibold text-text-primary group-hover:text-primary transition-colors">
+                                    Rua Luz Soriano, nº 20
                                 </p>
-                                <p className="text-text-light text-xs mt-1 leading-relaxed">
-                                    Rua Luz Soriano, nº 20, Loja 16
+                                <p className="text-text-light mt-1 leading-relaxed">
+                                    Loja 16 – Centro Comercial Girassol
                                 </p>
-                                <p className="text-text-light text-xs">
+                                <p className="text-text-light text-xs mt-0.5">
                                     2845-120 Amora
                                 </p>
                             </div>

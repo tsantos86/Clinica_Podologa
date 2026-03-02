@@ -23,7 +23,7 @@ const menuItems = [
   { id: 'configuracoes', label: 'Configurações', icon: Settings },
 ];
 
-export function Sidebar({ className, onLogout, onMenuChange, activeItem = 'agendamentos', userEmail }: SidebarProps) {
+export function Sidebar({ className, onLogout, onMenuChange, activeItem = 'dashboard', userEmail }: SidebarProps) {
   const displayEmail = userEmail || 'admin';
   const initials = displayEmail.substring(0, 2).toUpperCase();
   const handleExport = async () => {

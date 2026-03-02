@@ -5,11 +5,12 @@
 
 import { logAudit } from './db';
 
-const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-
-// Padrão de URL da API Meta: https://graph.facebook.com/v22.0/${PHONE_NUMBER_ID}/messages
-const META_API_URL = `https://graph.facebook.com/v22.0/${WHATSAPP_PHONE_NUMBER_ID}/messages`;
+// Configuração é lida das variáveis de ambiente
+const getMetaConfig = () => ({
+    token: process.env.WHATSAPP_ACCESS_TOKEN,
+    phoneId: process.env.WHATSAPP_PHONE_NUMBER_ID,
+    url: `https://graph.facebook.com/v22.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`
+});
 
 export class WhatsAppService {
     /**
@@ -46,7 +47,9 @@ export class WhatsAppService {
         languageCode: string = 'pt_PT',
         variables: string[] = [] // Variáveis do template {{1}}, {{2}}, etc.
     ): Promise<boolean> {
-        if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) {
+        const config = getMetaConfig();
+
+        if (!config.token || !config.phoneId) {
             console.warn('⚠️ WhatsApp (Meta API) não configurado. Mensagem não enviada.');
             return false;
         }
@@ -78,28 +81,30 @@ export class WhatsAppService {
         };
 
         try {
-            const response = await fetch(META_API_URL, {
+            const response = await fetch(config.url, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                    'Authorization': `Bearer ${config.token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(payload)
             });
 
+            const responseData = await response.json();
+
             if (!response.ok) {
-                const errorData = await response.json();
-                console.error('❌ Erro na API Meta (WhatsApp):', JSON.stringify(errorData, null, 2));
+                console.error('❌ ERRO META API:', JSON.stringify({
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: responseData
+                }, null, 2));
                 return false;
             }
 
-            // Sucesso!
-            const responseData = await response.json();
-            // Opcional: Logar a msgID
-            // console.log('✅ Mensagem enviada via Meta:', responseData.messages[0].id);
+            console.log(`✅ WhatsApp enviado com sucesso! (ID: ${responseData.messages?.[0]?.id})`);
             return true;
         } catch (error) {
-            console.error('❌ Falha de conexão com API Meta:', error);
+            console.error('❌ FALHA DE CONEXÃO META:', error);
             return false;
         }
     }
@@ -110,17 +115,16 @@ export class WhatsAppService {
      * Caso contrário, a mensagem será rejeitada. Para iniciar conversa, USE TEMPLATES.
      */
     static async sendText(phone: string, message: string): Promise<boolean> {
-        // Implementação básica de texto livre (reply apenas)
-        // Se precisar iniciar conversa, use sendTemplate
-        if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID) return false;
+        const config = getMetaConfig();
+        if (!config.token || !config.phoneId) return false;
 
         const formattedPhone = this.formatPhone(phone);
 
         try {
-            const response = await fetch(META_API_URL, {
+            const response = await fetch(config.url, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+                    'Authorization': `Bearer ${config.token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -128,7 +132,7 @@ export class WhatsAppService {
                     recipient_type: 'individual',
                     to: formattedPhone,
                     type: 'text',
-                    text: { // Objeto text corrigido
+                    text: {
                         body: message,
                         preview_url: false
                     }
@@ -185,17 +189,51 @@ export class WhatsAppService {
     /**
      * Template: Lembrete 24h Antes
      * Nome do Template sugerido: lembrete_consulta_24h
-     * Variáveis esperadas no template: {{1}}=Nome, {{2}}=Hora
+     *
+     * NOVO TEXTO SOLICITADO (Configure no Meta Manager):
+     * "Olá! Tudo bem? 😊
+     *
+     * A sua marcação está confirmada para amanhã {{1}}.
+     *
+     * 📍 Morada:
+     * Rua Luz Soriano, nº 20,
+     * Loja 16 – Centro Comercial Girassol
+     * 2845-120 Amora
+     *
+     * ⚠️ Caso a marcação não seja confirmada até às 19h, será cancelada automaticamente.
+     *
+     * Tolerância máxima de atraso:10 minutos.
+     * 💳 Formas de pagamento:
+     * Revolut, MB Way ou Dinheiro
+     *
+     * Obrigada,
+     * Stephanie Oliveira"
+     *
+     * Variáveis esperadas no template: {{1}}=Hora
      */
     static async sendReminder(nome: string, hora: string, phone: string) {
-        // Exemplo de corpo do template: "Olá {{1}}! Lembramos que sua consulta é amanhã às {{2}}. Endereço: Rua Luz Soriano 20. Confirme ou reagende se necessário."
         const templateName = process.env.WHATSAPP_TEMPLATE_REMINDER || 'lembrete_consulta_24h';
 
         return this.sendTemplate(
             phone,
             templateName,
             'pt_PT',
-            [nome, hora]
+            [hora] // Agora usando apenas a hora conforme o novo padrão
+        );
+    }
+
+    /**
+     * Notifica a Admin (Stephanie) sobre um novo agendamento
+     */
+    static async notifyAdmin(nome: string, servico: string, data: string, hora: string) {
+        const adminPhone = process.env.WHATSAPP_ADMIN_PHONE || '351934504542';
+        const templateName = process.env.WHATSAPP_TEMPLATE_BOOKING_RECEIVED || 'agendamento_recebido';
+
+        return this.sendTemplate(
+            adminPhone,
+            templateName,
+            'pt_PT',
+            [nome, servico, data, hora]
         );
     }
 }

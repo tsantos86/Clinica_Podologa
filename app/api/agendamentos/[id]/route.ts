@@ -147,7 +147,7 @@ export async function GET(
   } catch (error) {
     console.error('❌ Erro ao buscar agendamento:', error);
     return NextResponse.json(
-      { error: 'Erro ao conectar com o servidor. Tente novamente.' },
+      { error: `Erro Geral GET [ID]: ${error instanceof Error ? error.message : 'Erro desconhecido'}` },
       { status: 500 }
     );
   }
@@ -186,7 +186,7 @@ export async function PUT(
 
     // Campos opcionais
     if (body.servicoId !== undefined) updateData.servico_id = body.servicoId;
-    if (body.email !== undefined) updateData.email = body.email;
+    if (body.email !== undefined) updateData.email = body.email || null;
     if (body.observacoes !== undefined) updateData.observacoes = body.observacoes;
     if (body.tipoPagamento !== undefined) updateData.tipo_pagamento = body.tipoPagamento;
     if (body.valorPagamento !== undefined) updateData.valor_pagamento = body.valorPagamento;
@@ -262,7 +262,7 @@ export async function PATCH(
     if (body.hora !== undefined) updateData.hora = body.hora;
     if (body.nome !== undefined) updateData.nome = body.nome;
     if (body.telefone !== undefined) updateData.telefone = body.telefone;
-    if (body.email !== undefined) updateData.email = body.email;
+    if (body.email !== undefined) updateData.email = body.email || null;
     if (body.observacoes !== undefined) updateData.observacoes = body.observacoes;
     if (body.tipoPagamento !== undefined) updateData.tipo_pagamento = body.tipoPagamento;
     if (body.valorPagamento !== undefined) updateData.valor_pagamento = body.valorPagamento;

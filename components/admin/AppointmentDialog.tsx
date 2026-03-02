@@ -6,7 +6,7 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Appointment, Product } from '@/types';
 import { useServices } from '@/hooks/useServices';
 import { HOURLY_TIMES, getHourlyTimes, generateTimeSlots, isSlotAvailable, parseDuration } from '@/lib/utils/schedule';
-import { isValidHourlyTime } from '@/lib/formatters';
+import { isValidScheduleTime } from '@/lib/formatters';
 import { toast } from 'sonner';
 
 interface AppointmentDialogProps {
@@ -171,8 +171,8 @@ export function AppointmentDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.hora && !isValidHourlyTime(formData.hora)) {
-      toast.error('Por favor, selecione uma hora inteira (ex: 09:00)');
+    if (formData.hora && !isValidScheduleTime(formData.hora)) {
+      toast.error('Por favor, selecione um horário válido (ex: 08:30, 09:00)');
       return;
     }
 
@@ -228,7 +228,7 @@ export function AppointmentDialog({
               />
             </div>
 
-            <div>
+            <div className="col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
               <input
                 type="tel"
@@ -236,16 +236,6 @@ export function AppointmentDialog({
                 onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 

@@ -126,9 +126,9 @@ export function getTotalBlockedTime(serviceDurationMinutes: number): number {
 
 /** Slots fundamentais (calculados sob demanda ou em runtime estável) */
 export const AVAILABLE_TIMES = generateTimeSlots(undefined, false);
-export const HOURLY_TIMES = generateTimeSlots(undefined, true);
+export const HOURLY_TIMES = generateTimeSlots(undefined, false);
 
-/** Retorna os slots de hora em hora para uma data específica */
+/** Retorna os slots de intervalo (30 min) para uma data específica */
 export function getHourlyTimes(date: Date | string): string[] {
-    return generateTimeSlots(date, true);
+    return generateTimeSlots(date, false);
 }

@@ -52,7 +52,7 @@ export const ERROR_MESSAGES = {
   SLOT_UNAVAILABLE: 'Este horário já não está disponível. Por favor, escolha outro.',
   INVALID_DATE: 'Por favor, selecione uma data válida.',
   INVALID_TIME: 'Por favor, selecione um horário.',
-  INVALID_PHONE: 'Por favor, insira um número de telefone válido (ex: 912345678).',
+  INVALID_PHONE: 'Por favor, insira um número de telefone válido (9 dígitos ou formato internacional).',
   INVALID_EMAIL: 'Por favor, insira um email válido.',
   REQUIRED_FIELD: 'Este campo é obrigatório.',
   CLOSED_DAY: 'Quinta e domingo são dias de descanso. Por favor, escolha outro dia.',
@@ -93,8 +93,8 @@ export const CONFIRMATION_MESSAGES = {
 // Configurações de validação
 export const VALIDATION = {
   PHONE: {
-    PATTERN: /^[0-9]{9}$/,
-    MESSAGE: 'Número de telefone deve ter 9 dígitos',
+    PATTERN: /^\+?[0-9]{9,15}$/,
+    MESSAGE: 'Número de telefone inválido (mínimo 9 dígitos)',
   },
   EMAIL: {
     PATTERN: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
